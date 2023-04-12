@@ -22,11 +22,25 @@ class BladeState:
     g: Coordinate
 
 
-class blade:
+class Blade:
     NUM_POINTS = 100
     PLOT_RANGE = [-100, 100, -100, 100]
 
-    def __init__(self, a, b, c, d, e, f, g, theta_1, theta_5):
+    def __init__(
+        self,
+        a,
+        b,
+        c,
+        d,
+        e,
+        f,
+        g,
+        x_offset,
+        y_offset,
+        rotational_offset,
+        theta_1,
+        theta_5,
+    ):
         self.a = a
         self.b = b
         self.c = c
@@ -34,10 +48,13 @@ class blade:
         self.e = e
         self.f = f
         self.g = g
+        self.x_offset = x_offset
+        self.y_offset = y_offset
+        self.rotational_offset = rotational_offset
         self.theta_1 = theta_1
         self.theta_5 = theta_5
-        blade_states = self.calc_blade_states(200 * np.pi / 180, 280 * np.pi / 180)
-        self.plot_blade_motion(blade_states)
+        # blade_states = self.calc_blade_states(200 * np.pi / 180, 280 * np.pi / 180)
+        # self.plot_blade_motion(blade_states)
 
     def calc_blade_state(self, theta_2):
         """Calculates the geometric state of the blade for a givent theta_2 value
@@ -49,10 +66,10 @@ class blade:
             BladeState: Representing the geometric state of the blade
         """
         theta_34 = self.calc_theta_3_4(theta_2)
-        o_4 = self.calc_point_o_4()
-        a = self.calc_point_a(theta_2, o_4)
-        b = self.calc_point_b(theta_34[1], o_4)
-        g = self.calc_point_g(theta_34[1], o_4)
+        o_4 = self.calc_rel_point_o_4()
+        a = self.calc_rel_point_a(theta_2, o_4)
+        b = self.calc_rel_point_b(theta_34[1], o_4)
+        g = self.calc_rel_point_g(theta_34[1], o_4)
         return BladeState(o_4, a, b, g)
 
     def calc_blade_states(self, start_theta_2, end_theta_2, num_points=NUM_POINTS):
@@ -71,6 +88,68 @@ class blade:
         )
         return [self.calc_blade_state(theta_2) for theta_2 in theta_2s]
 
+    @staticmethod
+    def rotate_points(coordinate, angle):
+        c = math.sqrt(coordinate.x**2 + coordinate.y**2)
+        theta = math.atan2(coordinate.y, coordinate.x)
+        theta += angle
+        return Coordinate(math.cos(theta) * c, math.sin(theta) * c)
+
+    def get_x_y_motion_coordinates(self, blade_states):
+        """Gets absolute x and y coordinates of the blade at given blade states
+
+        Args:
+            blade_states (BladeState): Geometric representation of the blade
+
+        Returns:
+            ([[xcoordinates]],[[ycoordinates]]): X and Y coordinates of the blade, suitable for plotting
+        """
+        o_4 = [
+            self.rotate_points(blade_state.o_4, self.rotational_offset)
+            for blade_state in blade_states
+        ]
+        a = [
+            self.rotate_points(blade_state.a, self.rotational_offset)
+            for blade_state in blade_states
+        ]
+        b = [
+            self.rotate_points(blade_state.b, self.rotational_offset)
+            for blade_state in blade_states
+        ]
+        g = [
+            self.rotate_points(blade_state.g, self.rotational_offset)
+            for blade_state in blade_states
+        ]
+
+        x = [
+            [
+                0 + self.x_offset,
+                o_4[i].x + self.x_offset,
+                0 + self.x_offset,
+                a[i].x + self.x_offset,
+                b[i].x + self.x_offset,
+                o_4[i].x + self.x_offset,
+                g[i].x + self.x_offset,
+                b[i].x + self.x_offset,
+            ]
+            for i in range(len(blade_states))
+        ]
+        y = [
+            [
+                0 + self.y_offset,
+                o_4[i].y + self.y_offset,
+                0 + self.y_offset,
+                a[i].y + self.y_offset,
+                b[i].y + self.y_offset,
+                o_4[i].y + self.y_offset,
+                g[i].y + self.y_offset,
+                b[i].y + self.y_offset,
+            ]
+            for i in range(len(blade_states))
+        ]
+
+        return (x, y)
+
     def plot_blade_motion(self, blade_states):
         """Plots the motion of the blade through a series of blade states
 
@@ -79,32 +158,7 @@ class blade:
         """
         plt.figure()
 
-        x = [
-            [
-                0,
-                blade_state.o_4.x,
-                0,
-                blade_state.a.x,
-                blade_state.b.x,
-                blade_state.o_4.x,
-                blade_state.g.x,
-                blade_state.b.x,
-            ]
-            for blade_state in blade_states
-        ]
-        y = [
-            [
-                0,
-                blade_state.o_4.y,
-                0,
-                blade_state.a.y,
-                blade_state.b.y,
-                blade_state.o_4.y,
-                blade_state.g.y,
-                blade_state.b.y,
-            ]
-            for blade_state in blade_states
-        ]
+        x, y = self.get_x_y_motion_coordinates(blade_states)
 
         fig, ax = plt.subplots()
         fig.set_size_inches(10, 10)
@@ -119,8 +173,8 @@ class blade:
         line.axes.axis(self.PLOT_RANGE)
         return (line,)
 
-    def calc_point_a(self, theta_2, o_4):
-        """Calculates x and y coordinates of point a
+    def calc_rel_point_a(self, theta_2, o_4):
+        """Calculates relative x and y coordinates of point a
 
         Args:
             theta_2 (float): In radians
@@ -130,27 +184,27 @@ class blade:
             (x:float, y:float): Coordinates of point a
         """
         return Coordinate(
-            o_4.x + self.c * math.cos(theta_2),
-            o_4.y + self.c * math.sin(theta_2),
+            self.a * math.cos(theta_2),
+            self.a * math.sin(theta_2),
         )
 
-    def calc_point_b(self, theta_4, o_2):
-        """Calculates x and y coordinates of point b
+    def calc_rel_point_b(self, theta_4, o_4):
+        """Calculates relative x and y coordinates of point b
 
         Args:
             theta_4 (float): In radians
-            o_2 ((x:float,y:float)): in mm
+            o_4 ((x:float,y:float)): in mm
 
         Returns:
             (x:float, y:float): Coordinates of point b
         """
         return Coordinate(
-            o_2.x + self.d * math.cos(theta_4),
-            o_2.y + self.d * math.sin(theta_4),
+            o_4.x + self.c * math.cos(theta_4),
+            o_4.y + self.c * math.sin(theta_4),
         )
 
-    def calc_point_g(self, theta_4, o_4):
-        """Calculates x and y coordinates of point g
+    def calc_rel_point_g(self, theta_4, o_4):
+        """Calculates relative x and y coordinates of point g
 
         Args:
             theta_4 (float): In radians
@@ -164,14 +218,15 @@ class blade:
             o_4.y + self.g * math.sin(theta_4 + self.theta_5),
         )
 
-    def calc_point_o_4(self):
-        """Calculates x and y coordinates of point o_4
+    def calc_rel_point_o_4(self):
+        """Calculates relative x and y coordinates of point o_4
 
         Returns:
             (coordinate): Coordinates of point o_4
         """
         return Coordinate(
-            self.d * math.cos(self.theta_1), self.d * math.sin(self.theta_1)
+            self.d * math.cos(self.theta_1),
+            self.d * math.sin(self.theta_1),
         )
 
     def calc_theta_3_4(self, theta_2):
@@ -213,4 +268,4 @@ class blade:
         return eq_1, eq_2
 
 
-blade(66.5, 42, 39.5, 36.5, 41.5, 35, 72, 200 * np.pi / 180, 60 * np.pi / 180)
+# Blade(66.5, 42, 39.5, 36.5, 41.5, 35, 72, 0, 0, 200 * np.pi / 180, 60 * np.pi / 180)
