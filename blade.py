@@ -35,11 +35,10 @@ class Blade:
         e,
         f,
         g,
-        x_offset,
-        y_offset,
         rotational_offset,
-        theta_1,
         theta_5,
+        x_offset=0,
+        y_offset=0,
     ):
         self.a = a
         self.b = b
@@ -51,10 +50,7 @@ class Blade:
         self.x_offset = x_offset
         self.y_offset = y_offset
         self.rotational_offset = rotational_offset
-        self.theta_1 = theta_1
         self.theta_5 = theta_5
-        # blade_states = self.calc_blade_states(200 * np.pi / 180, 280 * np.pi / 180)
-        # self.plot_blade_motion(blade_states)
 
     def calc_blade_state(self, theta_2):
         """Calculates the geometric state of the blade for a givent theta_2 value
@@ -225,8 +221,8 @@ class Blade:
             (coordinate): Coordinates of point o_4
         """
         return Coordinate(
-            self.d * math.cos(self.theta_1),
-            self.d * math.sin(self.theta_1),
+            -self.d,
+            0,
         )
 
     def calc_theta_3_4(self, theta_2):
@@ -257,15 +253,11 @@ class Blade:
             self.a * math.cos(theta_2)
             + self.b * math.cos(theta_3)
             - self.c * math.cos(theta_4)
-            - self.d * math.cos(self.theta_1)
+            + self.d
         )
         eq_2 = (
             self.a * math.sin(theta_2)
             + self.b * math.sin(theta_3)
             - self.c * math.sin(theta_4)
-            - self.d * math.sin(self.theta_1)
         )
         return eq_1, eq_2
-
-
-# Blade(66.5, 42, 39.5, 36.5, 41.5, 35, 72, 0, 0, 200 * np.pi / 180, 60 * np.pi / 180)
