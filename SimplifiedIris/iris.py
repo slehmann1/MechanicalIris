@@ -3,7 +3,7 @@ import math
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
-
+from baseplate import BasePlate
 from blade import Blade
 from ring import Ring
 
@@ -12,7 +12,19 @@ class Iris:
     PLOT_RANGE = [-100, 100, -100, 100]
 
     def __init__(
-        self, blade_count, a, b, c, d, e, f, g, theta_5, start_theta_2, end_theta_2
+        self,
+        blade_count,
+        a,
+        b,
+        c,
+        d,
+        e,
+        f,
+        g,
+        theta_5,
+        start_theta_2,
+        end_theta_2,
+        aperture,
     ):
         self.blade_count = blade_count
         self.a = a
@@ -26,6 +38,9 @@ class Iris:
         self.start_theta_2 = start_theta_2
         self.end_theta_2 = end_theta_2
         self.ring = Ring(blade_count, start_theta_2, end_theta_2, a)
+        self.baseplate = BasePlate(
+            blade_count, start_theta_2, end_theta_2, a, aperture, 145
+        )
         self.blades = [
             Blade(
                 a,
@@ -80,6 +95,7 @@ class Iris:
             blit=False,
         )
         self.ring.draw(ax)
+        self.baseplate.draw(ax)
         plt.show()
 
     def update_lines(self, num, x_y_paths, lines):
@@ -90,7 +106,7 @@ class Iris:
 
 
 iris = Iris(
-    7,
+    3,
     66.5,
     42,
     39.5,
@@ -101,5 +117,6 @@ iris = Iris(
     60 * np.pi / 180,
     200 * np.pi / 180,
     230 * np.pi / 180,
+    20,
 )
 iris.animateIris()
