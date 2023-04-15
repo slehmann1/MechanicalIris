@@ -25,7 +25,7 @@ class Iris:
         self.theta_5 = theta_5
         self.start_theta_2 = start_theta_2
         self.end_theta_2 = end_theta_2
-        self.ring = Ring(blade_count, end_theta_2 - start_theta_2, theta_5, a)
+        self.ring = Ring(blade_count, start_theta_2, end_theta_2, a)
         self.blades = [
             Blade(
                 a,
@@ -90,7 +90,7 @@ class Iris:
 
 
 iris = Iris(
-    3,
+    7,
     66.5,
     42,
     39.5,
