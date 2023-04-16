@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import matplotlib.patches as patch
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.optimize import least_squares
+from scipy.optimize import Bounds, least_squares, minimize
 
 import geometry
 from geometry import Coordinate
@@ -21,18 +21,27 @@ class BladeState:
 class Blade:
     _NUM_POINTS = 50
     _COLOUR = "black"
+    _BLADE_WIDTH = 10
 
-    def __init__(self, rotation_angle, pinned_radius, AC, BC):
+    def __init__(self, rotation_angle, pinned_radius, AC, BC, blade_width=None):
+        if blade_width is None:
+            self.blade_width = self._BLADE_WIDTH
         self.rotation_angle = rotation_angle
         self.pinned_radius = pinned_radius
         self.AC = AC
         self.BC = BC
+        self.theta_a_range, self.Bx_range = self.calc_Bx_range()
+
+    def get_theta_a_domain(self):
+        root_angle = math.acos(self.pinned_radius / self.AC)
+        return (np.pi + root_angle + 0.01, 2 * np.pi - root_angle - 0.01)
 
     def draw(self, axs, blade_state):
         center, radius = geometry.get_circle(
             blade_state.A, blade_state.B, blade_state.C
         )
 
+        # Midline
         axs.add_patch(
             patch.Arc(
                 (center.x, center.y),
@@ -40,6 +49,55 @@ class Blade:
                 radius * 2,
                 theta1=(blade_state.C - center).angle() * 180 / np.pi,
                 theta2=(blade_state.A - center).angle() * 180 / np.pi,
+                color=self._COLOUR,
+                linestyle="dashed",
+            )
+        )
+
+        # Inner radius
+        axs.add_patch(
+            patch.Arc(
+                (center.x, center.y),
+                radius * 2 - self.blade_width,
+                radius * 2 - self.blade_width,
+                theta1=(blade_state.C - center).angle() * 180 / np.pi,
+                theta2=(blade_state.A - center).angle() * 180 / np.pi,
+                color=self._COLOUR,
+            )
+        )
+
+        # Outer radius
+        axs.add_patch(
+            patch.Arc(
+                (center.x, center.y),
+                radius * 2 + self.blade_width,
+                radius * 2 + self.blade_width,
+                theta1=(blade_state.C - center).angle() * 180 / np.pi,
+                theta2=(blade_state.A - center).angle() * 180 / np.pi,
+                color=self._COLOUR,
+            )
+        )
+
+        # End slot
+        axs.add_patch(
+            patch.Arc(
+                (blade_state.A.x, blade_state.A.y),
+                self.blade_width,
+                self.blade_width,
+                theta1=(blade_state.A - center).angle() * 180 / np.pi,
+                theta2=(blade_state.A - center).angle() * 180 / np.pi + 180,
+                color=self._COLOUR,
+            )
+        )
+
+        # End slot
+        axs.add_patch(
+            patch.Arc(
+                (blade_state.C.x, blade_state.C.y),
+                self.blade_width,
+                self.blade_width,
+                theta1=(blade_state.C - center).angle() * 180 / np.pi + 180,
+                theta2=(blade_state.C - center).angle() * 180 / np.pi,
                 color=self._COLOUR,
             )
         )
@@ -147,3 +205,44 @@ class Blade:
         )
 
         return eq_1, eq_2, eq_3
+
+    @staticmethod
+    def calc_Bx(theta_a, AC, BC, R):
+        res = least_squares(
+            functools.partial(
+                Blade.closed_loop_equations,
+                theta_a=theta_a,
+                AC=AC,
+                BC=BC,
+                pinned_radius=R,
+            ),
+            (BC, np.pi * 3 / 4, np.pi / 4),
+            bounds=((BC, np.pi / 2, 0), (AC, np.pi, np.pi / 2)),
+        ).x
+        return res[0] * math.cos(res[1])
+
+    def calc_Bx_range(self):
+        lims = self.get_theta_a_domain()
+
+        min_theta_a = minimize(
+            functools.partial(
+                lambda theta_a, AC, BC, R: -Blade.calc_Bx(theta_a, AC, BC, R),
+                AC=self.AC,
+                BC=self.BC,
+                R=self.pinned_radius,
+            ),
+            [4.0],
+            bounds=(Bounds([lims[0]], [lims[1]])),
+        ).x[0]
+        max_theta_a = minimize(
+            functools.partial(
+                Blade.calc_Bx, AC=self.AC, BC=self.BC, R=self.pinned_radius
+            ),
+            [4.0],
+            bounds=(Bounds([lims[0]], [lims[1]])),
+        ).x[0]
+
+        min_Bx = -self.calc_Bx(min_theta_a, self.AC, self.BC, self.pinned_radius)
+        max_Bx = -self.calc_Bx(max_theta_a, self.AC, self.BC, self.pinned_radius)
+
+        return (min_theta_a, max_theta_a), (min_Bx, max_Bx)

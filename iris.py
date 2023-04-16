@@ -11,25 +11,34 @@ from blade import Blade
 
 class Iris:
     PLOT_RANGE = [-200, 200, -200, 200]
-    SLEEP_TIME = 0.001
+    SLEEP_TIME = 0.01
     _COLOUR = "red"
 
-    def __init__(self, blade_count, AC, BC, pinned_radius):
+    def __init__(self, blade_count, AC, BC, pinned_radius, blade_width):
         self.blade_count = blade_count
         self.AC = AC
         self.BC = BC
         self.pinned_radius = pinned_radius
+        self.blade_width = blade_width
 
         self.blades = [
             Blade(2 * np.pi / blade_count * i, self.pinned_radius, self.AC, self.BC)
             for i in range(blade_count)
         ]
 
-        plt.figure()
-        self.fig, self.axs = plt.subplots()
+        self.fig = plt.figure()
+        self.axs = self.fig.gca()
         self.fig.set_size_inches(10, 10)
+        self.domain = self.blades[0].theta_a_range
+        print(f"DOMAIN: {self.domain}")
 
-    def drawIris(self, start_theta_a, end_theta_a):
+        print(f" BX: {self.blades[0].calc_Bx_range()}")
+
+    def drawIris(self, start_theta_a=None, end_theta_a=None):
+        if start_theta_a is None or end_theta_a is None:
+            start_theta_a = self.domain[0]
+            end_theta_a = self.domain[1]
+
         blade_states = [
             blade.calc_blade_states(
                 start_theta_a,
@@ -60,5 +69,5 @@ class Iris:
                 i = 0
 
 
-iris = Iris(16, 100, 60, 45)
-iris.drawIris(270 * np.pi / 180, 290 * np.pi / 180)
+iris = Iris(3, 100, 60, 45, 20)
+iris.drawIris()
