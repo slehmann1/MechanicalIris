@@ -54,6 +54,7 @@ class Iris:
         plt.show(block=False)
         i = 0
 
+        multiplier = 1
         while i < len(blade_states[0]):
             plt.cla()
             for blade_index in range(len(self.blades)):
@@ -68,11 +69,11 @@ class Iris:
             self.fig.canvas.flush_events()
             time.sleep(self.SLEEP_TIME)
 
-            i += 1
+            i += 1 * multiplier
 
-            if i == len(blade_states[0]) - 1:
-                i = 0
+            if i in [len(blade_states[0]) - 1, 0]:
+                multiplier *= -1
 
 
-iris = Iris(3, 100, 60, 45, 50.5, 20)
+iris = Iris(12, 100, 60, 45, 50.5, 20)
 iris.drawIris()

@@ -34,12 +34,16 @@ class Blade:
         self.BC = BC
         self.blade_width = blade_width
         self.theta_a_range, self.Bx_range = self.calc_Bx_range()
-        self.theta_a_range = (265 * np.pi / 180, 275 * np.pi / 180)
 
     def get_theta_a_domain(self):
-        return (265 * np.pi / 180, 275 * np.pi / 180)
-        root_angle = math.acos(self.pinned_radius / self.AC)
-        return (np.pi + root_angle + 0.01, 2 * np.pi - root_angle - 0.01)
+        # Domain limits are rounded from values of 243.434 and 296.565
+
+        # Bound for Bx to not exceed the pinned radius
+        a_bx_bound = self.calc_theta_a(
+            self.pinned_radius, self.BC, self.pinned_radius, self.blade_radius
+        )
+
+        return (244 * np.pi / 180, min(a_bx_bound, 296.4 * np.pi / 180))
 
     def draw(self, axs, blade_state):
         center, radius = geometry.get_circle(
@@ -247,6 +251,21 @@ class Blade:
             bounds=((BC, np.pi / 2, 0), (2 * BC, np.pi, np.pi / 2)),
         ).x
         return res[0] * math.cos(res[1])
+
+    @staticmethod
+    def calc_theta_a(Bx, BC, pinned_radius, blade_radius):
+        return minimize(
+            functools.partial(
+                lambda theta_a, BC, pinned_radius, blade_radius: abs(
+                    abs(Blade.calc_Bx(theta_a, BC, pinned_radius, blade_radius)) - Bx
+                ),
+                BC=BC,
+                pinned_radius=pinned_radius,
+                blade_radius=blade_radius,
+            ),
+            [4.7],
+            bounds=(Bounds([244 * np.pi / 180], [296.4 * np.pi / 180])),
+        ).x[0]
 
     def calc_Bx_range(self):
         lims = self.get_theta_a_domain()
