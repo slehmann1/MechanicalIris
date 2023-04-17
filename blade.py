@@ -23,16 +23,21 @@ class Blade:
     _COLOUR = "black"
     _BLADE_WIDTH = 10
 
-    def __init__(self, rotation_angle, pinned_radius, AC, BC, blade_width=None):
+    def __init__(
+        self, rotation_angle, pinned_radius, blade_radius, BC, blade_width=None
+    ):
         if blade_width is None:
-            self.blade_width = self._BLADE_WIDTH
+            blade_width = self._BLADE_WIDTH
         self.rotation_angle = rotation_angle
         self.pinned_radius = pinned_radius
-        self.AC = AC
+        self.blade_radius = blade_radius
         self.BC = BC
+        self.blade_width = blade_width
         self.theta_a_range, self.Bx_range = self.calc_Bx_range()
+        self.theta_a_range = (265 * np.pi / 180, 275 * np.pi / 180)
 
     def get_theta_a_domain(self):
+        return (265 * np.pi / 180, 275 * np.pi / 180)
         root_angle = math.acos(self.pinned_radius / self.AC)
         return (np.pi + root_angle + 0.01, 2 * np.pi - root_angle - 0.01)
 
@@ -126,18 +131,19 @@ class Blade:
 
     def calc_blade_state(self, theta_a):
         AB, theta_b, _ = self.calc_closed_loop_equations(
-            theta_a, self.AC, self.BC, self.pinned_radius
+            theta_a, self.BC, self.pinned_radius, self.blade_radius
         )
 
+        AC = self.get_AC(AB, self.BC, theta_a, self.blade_radius)
         A = Coordinate(
-            0, self.pinned_radius + self.get_L(self.pinned_radius, self.AC, theta_a)
+            0, self.pinned_radius + self.get_L(self.pinned_radius, AC, theta_a)
         )
 
         B = A - Coordinate(AB * math.cos(theta_b), AB * math.sin(theta_b))
 
         C = A - Coordinate(
-            self.AC * math.cos(theta_a),
-            -self.AC * math.sin(theta_a),
+            -AC * math.cos(theta_a),
+            -AC * math.sin(theta_a),
         )
 
         A.rotate(self.rotation_angle)
@@ -147,7 +153,7 @@ class Blade:
         return BladeState(A, B, C)
 
     @staticmethod
-    def calc_closed_loop_equations(theta_a, AC, BC, pinned_radius):
+    def calc_closed_loop_equations(theta_a, BC, pinned_radius, blade_radius):
         """Calculates values of theta 3 and theta 4 given a theta 2 value
 
         Args:
@@ -164,12 +170,12 @@ class Blade:
             functools.partial(
                 Blade.closed_loop_equations,
                 theta_a=theta_a,
-                AC=AC,
                 BC=BC,
                 pinned_radius=pinned_radius,
+                blade_radius=blade_radius,
             ),
             (BC, np.pi * 3 / 4, np.pi / 4),
-            bounds=((BC, np.pi / 2, 0), (AC, np.pi, np.pi / 2)),
+            bounds=((BC, np.pi / 2, 0), (2 * BC, np.pi, np.pi / 2)),
         ).x
 
     @staticmethod
@@ -181,7 +187,25 @@ class Blade:
         )
 
     @staticmethod
-    def closed_loop_equations(guess, theta_a, AC, BC, pinned_radius):
+    def get_AC(AB, BC, theta_b, blade_radius):
+        A = Coordinate(0, 0)
+        B = Coordinate(-AB * math.cos(theta_b), -AB * math.sin(theta_b))
+        center = geometry.get_circle_center(A, B, blade_radius, True)
+        alpha = 2 * math.asin(BC / 2 / blade_radius)
+        C = geometry.get_chord_coord(B, center, alpha, blade_radius)
+        return (C - A).magnitude()
+
+    @staticmethod
+    def get_AB(AC, BC, theta_c, blade_radius):
+        A = Coordinate(0, 0)
+        C = Coordinate(-AC * math.cos(theta_c), -AC * math.sin(theta_c))
+        center = geometry.get_circle_center(A, C, blade_radius, True)
+        alpha = 2 * math.asin(BC / 2 / blade_radius)
+        B = geometry.get_chord_coord(C, center, -alpha, blade_radius)
+        return (B - A).magnitude()
+
+    @staticmethod
+    def closed_loop_equations(guess, theta_a, BC, pinned_radius, blade_radius):
         """Closed-loop equations for crank-slider mechanism of a blade
 
         Args:
@@ -190,11 +214,14 @@ class Blade:
             AC (float): Distance between points A and C
             BC (float): Distance between points B and C
             pinned_radius (float): Radius from the iris center at which one end of the blade is pinned
+            blade_radius (float): Radius of the blade
 
         Returns:
             (Equation 1, Equation 2, Equation 3): Closed loop equations
         """
         AB, theta_b, theta_c = guess
+        AC = Blade.get_AC(AB, BC, theta_b, blade_radius)
+
         eq_1 = AC * math.cos(theta_a) + BC * math.cos(theta_c) + AB * math.cos(theta_b)
         eq_2 = AC * math.sin(theta_a) + BC * math.sin(theta_c) + AB * math.sin(theta_b)
 
@@ -207,17 +234,17 @@ class Blade:
         return eq_1, eq_2, eq_3
 
     @staticmethod
-    def calc_Bx(theta_a, AC, BC, R):
+    def calc_Bx(theta_a, BC, pinned_radius, blade_radius):
         res = least_squares(
             functools.partial(
                 Blade.closed_loop_equations,
                 theta_a=theta_a,
-                AC=AC,
                 BC=BC,
-                pinned_radius=R,
+                pinned_radius=pinned_radius,
+                blade_radius=blade_radius,
             ),
             (BC, np.pi * 3 / 4, np.pi / 4),
-            bounds=((BC, np.pi / 2, 0), (AC, np.pi, np.pi / 2)),
+            bounds=((BC, np.pi / 2, 0), (2 * BC, np.pi, np.pi / 2)),
         ).x
         return res[0] * math.cos(res[1])
 
@@ -226,23 +253,32 @@ class Blade:
 
         min_theta_a = minimize(
             functools.partial(
-                lambda theta_a, AC, BC, R: -Blade.calc_Bx(theta_a, AC, BC, R),
-                AC=self.AC,
+                lambda theta_a, BC, pinned_radius, blade_radius: -Blade.calc_Bx(
+                    theta_a, BC, pinned_radius, blade_radius
+                ),
                 BC=self.BC,
-                R=self.pinned_radius,
+                pinned_radius=self.pinned_radius,
+                blade_radius=self.blade_radius,
             ),
             [4.0],
             bounds=(Bounds([lims[0]], [lims[1]])),
         ).x[0]
         max_theta_a = minimize(
             functools.partial(
-                Blade.calc_Bx, AC=self.AC, BC=self.BC, R=self.pinned_radius
+                Blade.calc_Bx,
+                BC=self.BC,
+                pinned_radius=self.pinned_radius,
+                blade_radius=self.blade_radius,
             ),
             [4.0],
             bounds=(Bounds([lims[0]], [lims[1]])),
         ).x[0]
 
-        min_Bx = -self.calc_Bx(min_theta_a, self.AC, self.BC, self.pinned_radius)
-        max_Bx = -self.calc_Bx(max_theta_a, self.AC, self.BC, self.pinned_radius)
+        min_Bx = -self.calc_Bx(
+            min_theta_a, self.BC, self.pinned_radius, self.blade_radius
+        )
+        max_Bx = -self.calc_Bx(
+            max_theta_a, self.BC, self.pinned_radius, self.blade_radius
+        )
 
         return (min_theta_a, max_theta_a), (min_Bx, max_Bx)

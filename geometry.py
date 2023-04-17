@@ -15,7 +15,7 @@ class Coordinate:
     def __sub__(self, other):
         return Coordinate(self.x - other.x, self.y - other.y)
 
-    def distance(self, other):
+    def distance_to(self, other):
         return math.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2)
 
     def rotate(self, angle):
@@ -32,6 +32,21 @@ class Coordinate:
         if angle < 0:
             angle += 2 * np.pi
         return angle
+
+    def linterp(self, other, progress):
+        """Linearly interpolates between two coordinates
+
+        Args:
+            other (Coordinate): Coordinate to make progress towardds
+            progress (float): Value between 0 and 1
+
+        Returns:
+            Coordinate: Interpolated coordinate
+        """
+        return Coordinate(
+            self.x + (other.x - self.x) * progress,
+            self.y + (other.y - self.y) * progress,
+        )
 
 
 def get_circle(a, b, c):
@@ -69,3 +84,55 @@ def get_circle(a, b, c):
     r = math.sqrt(g**2 + f**2 - c)
 
     return (Coordinate(-g, -f), r)
+
+
+def get_circle_center(a, b, radius, convex_right=True):
+    """Gets the center of a circle tangent to two points with a given radius
+
+    Args:
+        a (Coordinate): Coincident on the circle
+        b (Coordinate): Coincident on the circle
+        radius (float): Circle radius
+        convex_right (bool, optional): Whether the circle through the two points has its convex surface pointing rightwards. Defaults to True.
+
+    Returns:
+        _type_: _description_
+    """
+    chord_length = a.distance_to(b)
+
+    # Chord length distance formula
+    d = math.sqrt(radius**2 - (chord_length / 2) ** 2)
+
+    multiplier = 1 if convex_right else -1
+    mid_chord = a.linterp(b, 0.5)
+    chord_angle = (b - a).angle()
+    return Coordinate(
+        mid_chord.x + d * multiplier * math.cos(chord_angle + np.pi / 2),
+        mid_chord.y + d * multiplier * math.sin(chord_angle + np.pi / 2),
+    )
+
+
+def get_chord_coord(a, center, theta, radius):
+    """Gets the coordinate of a point tangent on a circle and part of a chord
+
+    Args:
+        a (Coordinate): Coordinate of a point coincident on a circle, forming part of a chord
+        center (Coordinate): The center of the circle
+        theta (float): Angle subtended by a chord
+        radius (float): Radius of the circle
+
+    Returns:
+        Coordinate: Coordinates of the other point of the chord
+    """
+    alpha = (a - center).angle()
+    x = (
+        a.x
+        - (radius - radius * math.cos(theta)) * math.cos(alpha)
+        - radius * math.sin(theta) * math.sin(alpha)
+    )
+    y = (
+        a.y
+        - (radius - radius * math.cos(theta)) * math.sin(alpha)
+        + radius * math.sin(theta) * math.cos(alpha)
+    )
+    return Coordinate(x, y)
