@@ -35,9 +35,6 @@ class Iris:
         self.axs = self.fig.gca()
         self.fig.set_size_inches(10, 10)
         self.domain = self.blades[0].theta_a_range
-        print(f"DOMAIN: {self.domain}")
-
-        print(f" BX: {self.blades[0].calc_Bx_range()}")
 
     def drawIris(self, start_theta_a=None, end_theta_a=None):
         if start_theta_a is None or end_theta_a is None:
@@ -75,5 +72,5 @@ class Iris:
                 multiplier *= -1
 
 
-iris = Iris(12, 100, 60, 45, 50.5, 20)
+iris = Iris(6, 100, 60, 45, 50.5, 20)
 iris.drawIris()
