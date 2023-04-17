@@ -14,7 +14,9 @@ class Iris:
     SLEEP_TIME = 0.01
     _COLOUR = "red"
 
-    def __init__(self, blade_count, AC, BC, pinned_radius, blade_radius, blade_width):
+    def __init__(
+        self, blade_count, blade_angle, AC, BC, pinned_radius, blade_radius, blade_width
+    ):
         self.blade_count = blade_count
         self.AC = AC
         self.BC = BC
@@ -24,6 +26,7 @@ class Iris:
         self.blades = [
             Blade(
                 2 * np.pi / blade_count * i,
+                blade_angle,
                 self.pinned_radius,
                 blade_radius,
                 self.BC,
@@ -72,5 +75,5 @@ class Iris:
                 multiplier *= -1
 
 
-iris = Iris(6, 100, 60, 45, 50.5, 20)
+iris = Iris(6, np.pi, 100, 60, 45, 50.5, 20)
 iris.drawIris()

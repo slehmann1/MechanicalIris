@@ -29,18 +29,19 @@ class TestBlade(unittest.TestCase):
         )
 
     def test_get_AC(self):
+        blade = Blade(0, 45, 50.5, 60)
+
         self.assertAlmostEqual(
-            Blade.get_AC(62.52845541, 53.609793, 117.85005696 * np.pi / 180, 84.373947),
-            109.082695551,
+            blade.get_AC(67.50524683, 141.44560829 * np.pi / 180),
+            98.93245399,
             delta=0.00001,
         )
 
     def test_get_AB(self):
+        blade = Blade(0, 45, 50.5, 60)
         self.assertAlmostEqual(
-            Blade.get_AB(
-                109.082695551, 53.609793, 77.57752752 * np.pi / 180, 84.373947
-            ),
-            62.52845541,
+            blade.get_AB(98.93245399, 141.44560829 * np.pi / 180),
+            67.50524683,
             delta=0.00001,
         )
 
