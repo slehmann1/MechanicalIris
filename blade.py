@@ -17,6 +17,11 @@ class BladeState:
     C: Coordinate
     D: Coordinate
 
+    def rotated_copy(self, angle):
+        return BladeState(
+            *[coord.rotated_copy(angle) for coord in [self.A, self.B, self.C, self.D]]
+        )
+
 
 class Blade:
     _NUM_POINTS = 50
@@ -35,6 +40,17 @@ class Blade:
         BC,
         blade_width=None,
     ):
+        """An individual blade of an iris
+
+        Args:
+            rotation_angle (float): Rotation angle of the entire blade within the iris
+            blade_angle (float): Angle that is subtended tip to tail of the entire blade
+            pinned_radius (float): Radius at which the blade is pinned
+            blade_radius (float): Radius of the blade arc
+            BC (float): Length from point B to point C
+            blade_width (float, optional): Width of the blade from the internal radius to the outer radius. Defaults to None.
+            internal_radius (float, optional): Minimum internal radius of the iris when closed. Defaults to None.
+        """
         if blade_width is None:
             blade_width = self._BLADE_WIDTH
         self.rotation_angle = rotation_angle
@@ -45,15 +61,27 @@ class Blade:
         self.blade_width = blade_width
         self.theta_a_range, self.Bx_range = self.calc_Bx_range()
 
-    def get_theta_a_domain(self):
+    def set_theta_a_domain(self, inner_radius=None, outer_radius=None):
         """Determines the range of theta_a values that are valid for the blade to rotate through
 
         Returns:
             (float, float): Theta_a domain in radians
         """
-        # Bound for Bx to not exceed the pinned radius
-        a_bx_bound = self.calc_theta_a(self.pinned_radius)
-        return (self._DOMAIN_LIMITS[0], min(a_bx_bound, self._DOMAIN_LIMITS[1]))
+        lower_limit, upper_limit = self.theta_a_range
+
+        if inner_radius:
+            a_bx_bound = self.calc_theta_a(inner_radius)
+            if a_bx_bound > lower_limit:
+                lower_limit = a_bx_bound
+
+        if outer_radius:
+            a_bx_bound = self.calc_theta_a(outer_radius)
+            if a_bx_bound < upper_limit:
+                upper_limit = a_bx_bound
+
+        self.theta_a_range = [lower_limit, upper_limit]
+
+        return (lower_limit, upper_limit)
 
     def draw(self, axs, blade_state):
         center, radius = geometry.get_circle(
@@ -122,8 +150,24 @@ class Blade:
         )
 
         axs.scatter(
-            [state.x for state in [blade_state.A, blade_state.B, blade_state.C, blade_state.D]],
-            [state.y for state in [blade_state.A, blade_state.B, blade_state.C, blade_state.D]],
+            [
+                state.x
+                for state in [
+                    blade_state.A,
+                    blade_state.B,
+                    blade_state.C,
+                    blade_state.D,
+                ]
+            ],
+            [
+                state.y
+                for state in [
+                    blade_state.A,
+                    blade_state.B,
+                    blade_state.C,
+                    blade_state.D,
+                ]
+            ],
             color=self._COLOUR,
         )
 
@@ -253,14 +297,7 @@ class Blade:
 
     def calc_theta_a(self, Bx):
         return minimize(
-            functools.partial(
-                lambda theta_a, BC, pinned_radius, blade_radius: abs(
-                    abs(Blade.calc_Bx(theta_a, BC, pinned_radius, blade_radius)) - Bx
-                ),
-                BC=self.BC,
-                pinned_radius=self.pinned_radius,
-                blade_radius=self.blade_radius,
-            ),
+            lambda theta_a: abs(abs(self.calc_Bx(theta_a)) - Bx),
             [4.7],
             bounds=(Bounds([244 * np.pi / 180], [296.4 * np.pi / 180])),
         ).x[0]

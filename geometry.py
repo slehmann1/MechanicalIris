@@ -24,6 +24,13 @@ class Coordinate:
         self.x = init_magnitude * math.cos(init_angle + angle)
         self.y = init_magnitude * math.sin(init_angle + angle)
 
+    def rotated_copy(self, angle):
+        init_magnitude = self.magnitude()
+        init_angle = self.angle()
+        x = init_magnitude * math.cos(init_angle + angle)
+        y = init_magnitude * math.sin(init_angle + angle)
+        return Coordinate(x, y)
+
     def magnitude(self):
         return math.sqrt(self.x**2 + self.y**2)
 
