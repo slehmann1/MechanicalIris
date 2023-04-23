@@ -11,27 +11,27 @@ from blade import Blade
 
 class Iris:
     PLOT_RANGE = [-200, 200, -200, 200]
-    SLEEP_TIME = 0.01
+    SLEEP_TIME = 0.0001
     _COLOUR = "red"
 
     def __init__(
         self,
         blade_count,
         blade_angle,
-        AC,
-        BC,
         inner_radius,
-        pinned_radius,
+        outer_radius,
         blade_radius,
         blade_width,
     ):
+        blade_width = 20
         self.blade_count = blade_count
-        self.AC = AC
-        self.BC = BC
         self.inner_radius = inner_radius
-        self.pinned_radius = pinned_radius
+        self.outer_radius = outer_radius
         self.blade_width = blade_width
 
+        self.pinned_radius = outer_radius + blade_width / 2
+        self.BC = self.pinned_radius + self.blade_width
+        blade_radius = self.pinned_radius * 1.2
         self.blades = [
             Blade(
                 2 * np.pi / blade_count * i,
@@ -39,6 +39,7 @@ class Iris:
                 self.pinned_radius,
                 blade_radius,
                 self.BC,
+                self.blade_width,
             )
             for i in range(blade_count)
         ]
@@ -46,7 +47,9 @@ class Iris:
         self.fig = plt.figure()
         self.axs = self.fig.gca()
         self.fig.set_size_inches(10, 10)
-        self.blades[0].set_theta_a_domain(inner_radius, pinned_radius)
+        self.blades[0].set_theta_a_domain(
+            inner_radius + blade_width / 2, outer_radius + blade_width / 2
+        )
         self.domain = self.blades[0].theta_a_range
 
     def drawIris(self, start_theta_a=None, end_theta_a=None):
@@ -77,12 +80,14 @@ class Iris:
                 self.blades[blade_index].draw(self.axs, blade_states[blade_index][i])
 
             self.axs.add_patch(
-                patch.Circle((0, 0), self.pinned_radius, color=self._COLOUR, fill=False)
+                patch.Circle((0, 0), self.outer_radius, color=self._COLOUR, fill=False)
             )
 
             self.axs.add_patch(
                 patch.Circle((0, 0), self.inner_radius, color=self._COLOUR, fill=False)
             )
+
+            self.axs.add_patch(patch.Circle((0, 0), 1, color=self._COLOUR, fill=True))
 
             self.axs.axis(self.PLOT_RANGE)
             self.fig.canvas.draw()
@@ -95,5 +100,5 @@ class Iris:
                 multiplier *= -1
 
 
-iris = Iris(6, np.pi, 100, 60, 30, 45, 50.5, 20)
+iris = Iris(12, np.pi, 30, 45, 60, 20)
 iris.drawIris()

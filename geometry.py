@@ -107,8 +107,12 @@ def get_circle_center(a, b, radius, convex_right=True):
     """
     chord_length = a.distance_to(b)
 
-    # Chord length distance formula
-    d = math.sqrt(radius**2 - (chord_length / 2) ** 2)
+    if radius > chord_length / 2:
+        # Chord length distance formula
+        d = math.sqrt(radius**2 - (chord_length / 2) ** 2)
+    else:
+        # Chord length distance formula
+        d = math.sqrt((chord_length / 2) ** 2 - radius**2)
 
     multiplier = 1 if convex_right else -1
     mid_chord = a.linterp(b, 0.5)

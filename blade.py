@@ -29,7 +29,7 @@ class Blade:
     _BLADE_WIDTH = 10
 
     # Domain limits are rounded from values of 243.434 and 296.565
-    _DOMAIN_LIMITS = (244 * np.pi / 180, 296.4 * np.pi / 180)
+    _DOMAIN_LIMITS = (245 * np.pi / 180, 295 * np.pi / 180)
 
     def __init__(
         self,
@@ -205,9 +205,8 @@ class Blade:
         Returns:
             (BladeState): List of blade states over the given range of theta_a values
         """
-        theta_as = np.arange(
-            start_theta_a, end_theta_a, (end_theta_a - start_theta_a) / num_points
-        )
+        step_size = (end_theta_a - start_theta_a) / num_points
+        theta_as = np.arange(start_theta_a, end_theta_a + step_size, step_size)
         return [self.calc_blade_state(theta_a) for theta_a in theta_as]
 
     def calc_closed_loop_equations(self, theta_a):
@@ -222,7 +221,10 @@ class Blade:
         return least_squares(
             functools.partial(self.closed_loop_equations, theta_a=theta_a),
             (self.BC, np.pi * 3 / 4, np.pi / 4),
-            bounds=((self.BC, np.pi / 2, 0), (2 * self.BC, np.pi, np.pi / 2)),
+            bounds=(
+                (self.pinned_radius, np.pi / 2, 0),
+                (80, np.pi, np.pi / 2),
+            ),
         ).x
 
     def get_L(self, AC, theta_a):
@@ -271,35 +273,46 @@ class Blade:
             + self.BC * math.sin(theta_c)
             + AB * math.sin(theta_b)
         )
-
         L = self.get_L(AC, theta_a)
 
-        eq_3 = math.acos((L**2 + AB**2 - self.BC**2) / (2 * L * AB)) - (
-            -np.pi / 2 + theta_b
-        )
+        try:
+            eq_3 = math.acos((L**2 + AB**2 - self.BC**2) / (2 * L * AB)) - (
+                -np.pi / 2 + theta_b
+            )
+        except:
+            return eq_1, eq_2, np.inf
+
+        # print(
+        #    f"L: {L} AB: {AB} BC: {self.BC} Theta_A: {theta_a*180/np.pi} Theta_B: {theta_b*180/np.pi} Theta_C: {theta_c*180/np.pi}"
+        # )
 
         return eq_1, eq_2, eq_3
 
     def calc_Bx(self, theta_a):
         """Calculates the x position of point B
-
         Args:
             theta_a (float): Measured in rad
         Returns:
             float: X position of point B in an unrotated state
         """
+        # TODO: DETERMINE AB UPPER RANGE
         res = least_squares(
             functools.partial(self.closed_loop_equations, theta_a=theta_a),
             (self.BC, np.pi * 3 / 4, np.pi / 4),
-            bounds=((self.BC, np.pi / 2, 0), (2 * self.BC, np.pi, np.pi / 2)),
+            bounds=(
+                (0, np.pi / 2, 0),
+                (80, np.pi, np.pi / 2),
+            ),
         ).x
         return res[0] * math.cos(res[1])
 
     def calc_theta_a(self, Bx):
+        # Bx = -1
+        print(f"FINDING {Bx} {self._DOMAIN_LIMITS[0], self._DOMAIN_LIMITS[1]}")
         return minimize(
             lambda theta_a: abs(abs(self.calc_Bx(theta_a)) - Bx),
-            [4.7],
-            bounds=(Bounds([244 * np.pi / 180], [296.4 * np.pi / 180])),
+            4.7,
+            bounds=(Bounds(self._DOMAIN_LIMITS[0], self._DOMAIN_LIMITS[1])),
         ).x[0]
 
     def calc_Bx_range(self):
@@ -310,16 +323,18 @@ class Blade:
         """
         min_theta_a = minimize(
             lambda theta_a: -self.calc_Bx(theta_a),
-            [4.0],
-            bounds=(Bounds([self._DOMAIN_LIMITS[0]], [self._DOMAIN_LIMITS[1]])),
+            4.0,
+            bounds=(Bounds(self._DOMAIN_LIMITS[0], self._DOMAIN_LIMITS[1])),
         ).x[0]
         max_theta_a = minimize(
             self.calc_Bx,
-            [4.0],
-            bounds=(Bounds([self._DOMAIN_LIMITS[0]], [self._DOMAIN_LIMITS[1]])),
+            4.0,
+            bounds=(Bounds(self._DOMAIN_LIMITS[0], self._DOMAIN_LIMITS[1])),
         ).x[0]
 
         min_Bx = -self.calc_Bx(min_theta_a)
         max_Bx = -self.calc_Bx(max_theta_a)
+
+        print(f"Min BX {min_Bx} Max BX {max_Bx}")
 
         return (min_theta_a, max_theta_a), (min_Bx, max_Bx)

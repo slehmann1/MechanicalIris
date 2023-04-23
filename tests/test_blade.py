@@ -8,7 +8,7 @@ from blade import Blade
 class TestBlade(unittest.TestCase):
     def test_calc_AB(self):
         # Tested against values generated with Solidworks
-        blade = Blade(0, 45, 50.5, 60)
+        blade = Blade(0, np.pi, 45, 50.5, 60)
         # AB
         self.assertAlmostEqual(
             blade.calc_closed_loop_equations(285 * np.pi / 180)[0],
@@ -29,7 +29,7 @@ class TestBlade(unittest.TestCase):
         )
 
     def test_get_AC(self):
-        blade = Blade(0, 45, 50.5, 60)
+        blade = Blade(0, np.pi, 45, 50.5, 60)
 
         self.assertAlmostEqual(
             blade.get_AC(67.50524683, 141.44560829 * np.pi / 180),
@@ -38,7 +38,7 @@ class TestBlade(unittest.TestCase):
         )
 
     def test_get_AB(self):
-        blade = Blade(0, 45, 50.5, 60)
+        blade = Blade(0, np.pi, 45, 50.5, 60)
         self.assertAlmostEqual(
             blade.get_AB(98.93245399, 141.44560829 * np.pi / 180),
             67.50524683,
@@ -46,7 +46,7 @@ class TestBlade(unittest.TestCase):
         )
 
     def test_calc_blade_state(self):
-        blade = Blade(0, 45, 50.5, 60)
+        blade = Blade(0, np.pi, 45, 50.5, 60)
         state = blade.calc_blade_state(270 * np.pi / 180)
         self.assertAlmostEqual(state.A.x, 0)
         self.assertAlmostEqual(state.B.x, 39.68626967)
