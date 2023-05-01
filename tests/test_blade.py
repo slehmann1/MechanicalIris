@@ -28,6 +28,18 @@ class TestBlade(unittest.TestCase):
             4,
         )
 
+    def test_calc_bx(self):
+        blade = Blade(0, np.pi, 55, 66, 75, 20)
+        self.assertAlmostEqual(
+            blade.calc_Bx(277.73007783 * np.pi / 180), 59.7198989, delta=5
+        )
+
+    def test_calc_theta_a(self):
+        blade = Blade(0, np.pi, 55, 66, 75, 20)
+        self.assertAlmostEqual(
+            blade.calc_theta_a(59.7198989) * 180 / np.pi, 277.73007783, delta=5
+        )
+
     def test_get_AC(self):
         blade = Blade(0, np.pi, 45, 50.5, 60)
 
@@ -42,6 +54,14 @@ class TestBlade(unittest.TestCase):
         self.assertAlmostEqual(
             blade.get_AB(98.93245399, 141.44560829 * np.pi / 180),
             67.50524683,
+            delta=0.00001,
+        )
+
+    def test_get_AB2(self):
+        blade = Blade(0, np.pi, 55, 66, 75, 20)
+        self.assertAlmostEqual(
+            blade.get_AB(126.96905281, 295.66873999 * np.pi / 180),
+            83.974614,
             delta=0.00001,
         )
 

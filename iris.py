@@ -1,7 +1,5 @@
-import math
 import time
 
-import matplotlib.animation as animation
 import matplotlib.patches as patch
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,9 +8,9 @@ from blade import Blade
 
 
 class Iris:
-    PLOT_RANGE = [-200, 200, -200, 200]
-    SLEEP_TIME = 0.0001
+    _SLEEP_TIME = 0.0001
     _COLOUR = "red"
+    _ENDLESS_DRAW = False
 
     def __init__(
         self,
@@ -20,18 +18,19 @@ class Iris:
         blade_angle,
         inner_radius,
         outer_radius,
-        blade_radius,
         blade_width,
     ):
-        blade_width = 20
         self.blade_count = blade_count
         self.inner_radius = inner_radius
         self.outer_radius = outer_radius
         self.blade_width = blade_width
 
         self.pinned_radius = outer_radius + blade_width / 2
-        self.BC = self.pinned_radius + self.blade_width
+        self.BC = self.pinned_radius + blade_width
         blade_radius = self.pinned_radius * 1.2
+
+        if blade_width > blade_radius:
+            raise ValueError("Blade width too large")
         self.blades = [
             Blade(
                 2 * np.pi / blade_count * i,
@@ -87,18 +86,28 @@ class Iris:
                 patch.Circle((0, 0), self.inner_radius, color=self._COLOUR, fill=False)
             )
 
-            self.axs.add_patch(patch.Circle((0, 0), 1, color=self._COLOUR, fill=True))
+            self.axs.add_patch(
+                patch.Circle((0, 0), 0.01, color=self._COLOUR, fill=True)
+            )
 
-            self.axs.axis(self.PLOT_RANGE)
+            self.axs.axis(
+                [
+                    -self.outer_radius * 2.5,
+                    self.outer_radius * 2.5,
+                    -self.outer_radius * 2.5,
+                    self.outer_radius * 2.5,
+                ]
+            )
             self.fig.canvas.draw()
             self.fig.canvas.flush_events()
-            time.sleep(self.SLEEP_TIME)
+            time.sleep(self._SLEEP_TIME)
 
             i += 1 * multiplier
 
-            if i in [len(blade_states[0]) - 1, 0]:
+            if self._ENDLESS_DRAW and i in [len(blade_states[0]) - 1, 0]:
                 multiplier *= -1
+        plt.close()
 
 
-iris = Iris(12, np.pi, 30, 45, 60, 20)
-iris.drawIris()
+# iris = Iris(4, np.pi, 30, 45, 20)
+# iris.drawIris()

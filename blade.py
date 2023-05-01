@@ -29,7 +29,8 @@ class Blade:
     _BLADE_WIDTH = 10
 
     # Domain limits are rounded from values of 243.434 and 296.565
-    _DOMAIN_LIMITS = (245 * np.pi / 180, 295 * np.pi / 180)
+    _DOMAIN_LIMITS = (244.5 * np.pi / 180, 295.2 * np.pi / 180)
+    _AC_MAX_CORRECTION = 1.03  # Multiplicative factor to account for BY being slightly greater that 2*pinned_radius
 
     def __init__(
         self,
@@ -80,6 +81,7 @@ class Blade:
                 upper_limit = a_bx_bound
 
         self.theta_a_range = [lower_limit, upper_limit]
+        self.Bx_range = [-self.calc_Bx(lower_limit), -self.calc_Bx(upper_limit)]
 
         return (lower_limit, upper_limit)
 
@@ -218,16 +220,27 @@ class Blade:
         Returns:
             (AB, theta_b, theta_c): Thetas measured in radians
         """
+        AC_max = (
+            math.sqrt(self.pinned_radius**2 + (2 * self.pinned_radius) ** 2)
+            * self._AC_MAX_CORRECTION
+        )
+
         return least_squares(
             functools.partial(self.closed_loop_equations, theta_a=theta_a),
             (self.BC, np.pi * 3 / 4, np.pi / 4),
             bounds=(
                 (self.pinned_radius, np.pi / 2, 0),
-                (80, np.pi, np.pi / 2),
+                (
+                    self.get_AB(AC_max, self._DOMAIN_LIMITS[1]),
+                    np.pi,
+                    np.pi / 2,
+                ),
             ),
         ).x
 
     def get_L(self, AC, theta_a):
+        if (AC * math.cos(theta_a)) ** 2 > self.pinned_radius**2:
+            AC = math.sqrt(self.pinned_radius**2 / math.cos(theta_a) ** 2) * 0.99
         return (
             -self.pinned_radius
             - math.sqrt(self.pinned_radius**2 - (AC * math.cos(theta_a)) ** 2)
@@ -238,13 +251,15 @@ class Blade:
         A = Coordinate(0, 0)
         B = Coordinate(-AB * math.cos(theta_b), -AB * math.sin(theta_b))
         center = geometry.get_circle_center(A, B, self.blade_radius, True)
+        if self.BC / 2 / self.blade_radius > 1:
+            raise ValueError("BC/blade radius values invalid")
         alpha = 2 * math.asin(self.BC / 2 / self.blade_radius)
         C = geometry.get_chord_coord(B, center, alpha, self.blade_radius)
         return (C - A).magnitude()
 
-    def get_AB(self, AC, theta_c):
+    def get_AB(self, AC, theta_a):
         A = Coordinate(0, 0)
-        C = Coordinate(-AC * math.cos(theta_c), -AC * math.sin(theta_c))
+        C = Coordinate(-AC * math.cos(theta_a), -AC * math.sin(theta_a))
         center = geometry.get_circle_center(A, C, self.blade_radius, True)
         alpha = 2 * math.asin(self.BC / 2 / self.blade_radius)
         B = geometry.get_chord_coord(C, center, -alpha, self.blade_radius)
@@ -274,7 +289,6 @@ class Blade:
             + AB * math.sin(theta_b)
         )
         L = self.get_L(AC, theta_a)
-
         try:
             eq_3 = math.acos((L**2 + AB**2 - self.BC**2) / (2 * L * AB)) - (
                 -np.pi / 2 + theta_b
@@ -296,19 +310,21 @@ class Blade:
             float: X position of point B in an unrotated state
         """
         # TODO: DETERMINE AB UPPER RANGE
+        AC_max = (
+            math.sqrt(self.pinned_radius**2 + (2 * self.pinned_radius) ** 2)
+            * self._AC_MAX_CORRECTION
+        )
         res = least_squares(
             functools.partial(self.closed_loop_equations, theta_a=theta_a),
             (self.BC, np.pi * 3 / 4, np.pi / 4),
             bounds=(
                 (0, np.pi / 2, 0),
-                (80, np.pi, np.pi / 2),
+                (self.get_AB(AC_max, self._DOMAIN_LIMITS[1]), np.pi, np.pi / 2),
             ),
         ).x
         return res[0] * math.cos(res[1])
 
     def calc_theta_a(self, Bx):
-        # Bx = -1
-        print(f"FINDING {Bx} {self._DOMAIN_LIMITS[0], self._DOMAIN_LIMITS[1]}")
         return minimize(
             lambda theta_a: abs(abs(self.calc_Bx(theta_a)) - Bx),
             4.7,
@@ -332,9 +348,7 @@ class Blade:
             bounds=(Bounds(self._DOMAIN_LIMITS[0], self._DOMAIN_LIMITS[1])),
         ).x[0]
 
-        min_Bx = -self.calc_Bx(min_theta_a)
-        max_Bx = -self.calc_Bx(max_theta_a)
-
-        print(f"Min BX {min_Bx} Max BX {max_Bx}")
+        min_Bx = self.calc_Bx(min_theta_a)
+        max_Bx = self.calc_Bx(max_theta_a)
 
         return (min_theta_a, max_theta_a), (min_Bx, max_Bx)
