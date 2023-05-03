@@ -7,7 +7,8 @@ import numpy as np
 from scipy.optimize import Bounds, least_squares, minimize
 
 import geometry
-from geometry import Coordinate
+from dxf import DXF
+from geometry import Arc, Circle, Coordinate
 
 
 @dataclass
@@ -27,6 +28,8 @@ class Blade:
     _NUM_POINTS = 50
     _COLOUR = "black"
     _BLADE_WIDTH = 10
+    _DXF_FILE_NAME = "blade.dxf"
+    _HOLE_RADIUS = 1
 
     # Domain limits are rounded from values of 243.434 and 296.565
     _DOMAIN_LIMITS = (244.5 * np.pi / 180, 295.2 * np.pi / 180)
@@ -61,6 +64,8 @@ class Blade:
         self.BC = BC
         self.blade_width = blade_width
         self.theta_a_range, self.Bx_range = self.calc_Bx_range()
+        self.blade_state = None
+        self.shapes = None
 
     def set_theta_a_domain(self, inner_radius=None, outer_radius=None):
         """Determines the range of theta_a values that are valid for the blade to rotate through
@@ -85,93 +90,78 @@ class Blade:
 
         return (lower_limit, upper_limit)
 
-    def draw(self, axs, blade_state):
+    def build_shapes(self, blade_state=None):
+        if blade_state is None:
+            blade_state = self.blade_state
+
         center, radius = geometry.get_circle(
             blade_state.A, blade_state.B, blade_state.C
         )
-
-        # Midline
-        axs.add_patch(
-            patch.Arc(
-                (center.x, center.y),
+        self.shapes = [
+            # Midline
+            Arc(
+                Coordinate(center.x, center.y),
                 radius * 2,
                 radius * 2,
-                theta1=(blade_state.C - center).angle() * 180 / np.pi,
-                theta2=(blade_state.D - center).angle() * 180 / np.pi,
-                color=self._COLOUR,
-                linestyle="dashed",
-            )
-        )
-
-        # Inner radius
-        axs.add_patch(
-            patch.Arc(
-                (center.x, center.y),
+                (blade_state.C - center).angle() * 180 / np.pi,
+                (blade_state.D - center).angle() * 180 / np.pi,
+                self._COLOUR,
+                True,
+            ),
+            # Inner radius
+            Arc(
+                Coordinate(center.x, center.y),
                 radius * 2 - self.blade_width,
                 radius * 2 - self.blade_width,
-                theta1=(blade_state.C - center).angle() * 180 / np.pi,
-                theta2=(blade_state.D - center).angle() * 180 / np.pi,
-                color=self._COLOUR,
-            )
-        )
-
-        # Outer radius
-        axs.add_patch(
-            patch.Arc(
-                (center.x, center.y),
+                (blade_state.C - center).angle() * 180 / np.pi,
+                (blade_state.D - center).angle() * 180 / np.pi,
+                self._COLOUR,
+                False,
+            ),
+            # Outer radius
+            Arc(
+                Coordinate(center.x, center.y),
                 radius * 2 + self.blade_width,
                 radius * 2 + self.blade_width,
-                theta1=(blade_state.C - center).angle() * 180 / np.pi,
-                theta2=(blade_state.D - center).angle() * 180 / np.pi,
-                color=self._COLOUR,
-            )
-        )
+                (blade_state.C - center).angle() * 180 / np.pi,
+                (blade_state.D - center).angle() * 180 / np.pi,
+                self._COLOUR,
+                False,
+            ),
+            # End slot
+            Arc(
+                Coordinate(blade_state.D.x, blade_state.D.y),
+                self.blade_width,
+                self.blade_width,
+                (blade_state.D - center).angle() * 180 / np.pi,
+                (blade_state.D - center).angle() * 180 / np.pi + 180,
+                self._COLOUR,
+                False,
+            ),
+            # End slot
+            Arc(
+                Coordinate(blade_state.C.x, blade_state.C.y),
+                self.blade_width,
+                self.blade_width,
+                (blade_state.C - center).angle() * 180 / np.pi + 180,
+                (blade_state.C - center).angle() * 180 / np.pi,
+                self._COLOUR,
+                False,
+            ),
+            Circle(blade_state.A, self._HOLE_RADIUS, self._COLOUR, True, False),
+            Circle(blade_state.B, self._HOLE_RADIUS, self._COLOUR, True, True),
+            Circle(blade_state.C, self._HOLE_RADIUS, self._COLOUR, True, False),
+            Circle(blade_state.D, self._HOLE_RADIUS, self._COLOUR, True, True),
+        ]
 
-        # End slot
-        axs.add_patch(
-            patch.Arc(
-                (blade_state.D.x, blade_state.D.y),
-                self.blade_width,
-                self.blade_width,
-                theta1=(blade_state.D - center).angle() * 180 / np.pi,
-                theta2=(blade_state.D - center).angle() * 180 / np.pi + 180,
-                color=self._COLOUR,
-            )
-        )
+        return self.shapes
 
-        # End slot
-        axs.add_patch(
-            patch.Arc(
-                (blade_state.C.x, blade_state.C.y),
-                self.blade_width,
-                self.blade_width,
-                theta1=(blade_state.C - center).angle() * 180 / np.pi + 180,
-                theta2=(blade_state.C - center).angle() * 180 / np.pi,
-                color=self._COLOUR,
-            )
-        )
+    def draw(self, axs, blade_state=None):
+        if blade_state is None:
+            blade_state = self.blade_state
 
-        axs.scatter(
-            [
-                state.x
-                for state in [
-                    blade_state.A,
-                    blade_state.B,
-                    blade_state.C,
-                    blade_state.D,
-                ]
-            ],
-            [
-                state.y
-                for state in [
-                    blade_state.A,
-                    blade_state.B,
-                    blade_state.C,
-                    blade_state.D,
-                ]
-            ],
-            color=self._COLOUR,
-        )
+        for arc in self.shapes:
+            arc.draw(axs)
 
     def calc_blade_state(self, theta_a):
         AB, theta_b, _ = self.calc_closed_loop_equations(theta_a)
@@ -330,6 +320,14 @@ class Blade:
             4.7,
             bounds=(Bounds(self._DOMAIN_LIMITS[0], self._DOMAIN_LIMITS[1])),
         ).x[0]
+
+    def save_dxf(self):
+        dxf = DXF()
+        for shape in self.shapes:
+            if not shape.construction_line:
+                dxf.add_shape(shape)
+
+        dxf.save(self._DXF_FILE_NAME)
 
     def calc_Bx_range(self):
         """Calculates the range of x values that point B can take

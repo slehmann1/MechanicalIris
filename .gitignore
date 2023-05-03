@@ -238,3 +238,4 @@ _Pvt_Extensions
 .sourcery.yaml
 
 SolidWorks/
+*.dxf

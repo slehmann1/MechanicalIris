@@ -76,6 +76,7 @@ class Iris:
         while i < len(blade_states[0]):
             plt.cla()
             for blade_index in range(len(self.blades)):
+                self.blades[blade_index].build_shapes(blade_states[blade_index][i])
                 self.blades[blade_index].draw(self.axs, blade_states[blade_index][i])
 
             self.axs.add_patch(
@@ -107,6 +108,8 @@ class Iris:
             if self._ENDLESS_DRAW and i in [len(blade_states[0]) - 1, 0]:
                 multiplier *= -1
         plt.close()
+
+        self.blades[0].save_dxf()
 
 
 # iris = Iris(4, np.pi, 30, 45, 20)

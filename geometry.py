@@ -1,6 +1,8 @@
 import math
+from abc import abstractmethod
 from dataclasses import dataclass
 
+import matplotlib.patches as patch
 import numpy as np
 
 
@@ -54,6 +56,98 @@ class Coordinate:
             self.x + (other.x - self.x) * progress,
             self.y + (other.y - self.y) * progress,
         )
+
+
+class Shape:
+    def __init__(self, colour, contruction_line=False):
+        self.colour = colour
+        self.construction_line = contruction_line
+
+    @abstractmethod
+    def add_to_dxf(self, doc):
+        pass
+
+    @abstractmethod
+    def draw(self, axs):
+        pass
+
+
+class Arc(Shape):
+    def __init__(
+        self, center, width, height, theta_1, theta_2, colour, construction_line=False
+    ):
+        """Creates an elliptical arc
+
+        Args:
+            center (Coordinate): Centerpoint
+            width (float): Width of the ellipse
+            height (float): Height of the ellipse
+            theta_1 (float): Start angle measured in degrees from +x
+            theta_2 (flaot): End angle measured in degrees from +x
+            colour (str): Matplotlib colour
+            construction_line (bool, optional): Whether the arc is a construction line that should be hidden in the DXF. Defaults to False.
+        """
+        self.center = center
+        self.width = width
+        self.height = height
+        self.theta_1 = theta_1
+        self.theta_2 = theta_2
+        super().__init__(colour, construction_line)
+
+    def draw(self, axs):
+        axs.add_patch(
+            patch.Arc(
+                (self.center.x, self.center.y),
+                self.width,
+                self.height,
+                theta1=self.theta_1,
+                theta2=self.theta_2,
+                color=self.colour,
+                linestyle="dashed" if self.construction_line else "solid",
+            )
+        )
+
+    def add_to_dxf(self, doc):
+        ratio = self.height / self.width
+        doc.modelspace.add_ellipse(
+            (self.center.x, self.center.y),
+            (self.height / 2, 0),
+            ratio,
+            self.theta_1 * np.pi / 180,
+            self.theta_2 * np.pi / 180,
+        )
+
+
+class Circle(Shape):
+    def __init__(self, center, radius, colour, filled=False, construction_line=False):
+        """Creates an elliptical arc
+
+        Args:
+            center (Coordinate): Centerpoint
+            width (float): Width of the ellipse
+            height (float): Height of the ellipse
+            theta_1 (float): Start angle measured in degrees from +x
+            theta_2 (flaot): End angle measured in degrees from +x
+            colour (str): Matplotlib colour
+            construction_line (bool, optional): Whether the arc is a construction line that should be hidden in the DXF. Defaults to False.
+        """
+        self.center = center
+        self.radius = radius
+        self.filled = filled
+        super().__init__(colour, construction_line)
+
+    def draw(self, axs):
+        axs.add_patch(
+            patch.Circle(
+                (self.center.x, self.center.y),
+                self.radius,
+                color=self.colour,
+                fill=self.filled,
+            )
+        )
+
+    def add_to_dxf(self, doc):
+        doc.modelspace.add_circle((self.center.x, self.center.y), self.radius)
 
 
 def get_circle(a, b, c):
