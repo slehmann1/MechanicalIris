@@ -88,7 +88,9 @@ class Iris:
 
             plt.cla()
             for blade_index in range(len(self.blades)):
-                self.blades[blade_index].build_shapes(blade_states[blade_index][i])
+                self.blades[blade_index].build_shapes(
+                    blade_state=blade_states[blade_index][i]
+                )
                 self.blades[blade_index].draw(self.axs, blade_states[blade_index][i])
 
             self.base_plate.draw(self.axs, rotation_angle)

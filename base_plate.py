@@ -4,9 +4,10 @@ import numpy as np
 
 from dxf import DXF
 from geometry import Circle, Coordinate
+from part import Part
 
 
-class BasePlate:
+class BasePlate(Part):
     _COLOUR = "green"
     _DXF_FILE_NAME = "basePlate.dxf"
 
@@ -16,9 +17,10 @@ class BasePlate:
         self.pin_radius = pin_radius
         self.hole_radius = hole_radius
         self.pin_count = pin_count
-        self.shapes = self._build_shapes(0)
+        super().__init__(self._COLOUR, self._DXF_FILE_NAME)
 
-    def _build_shapes(self, rotation_angle):
+    def build_shapes(self, **kwargs):
+        rotation_angle = kwargs["rotation_angle"]
         shapes = [
             # ID
             Circle(Coordinate(0, 0), self.inner_radius, self._COLOUR),
@@ -43,14 +45,7 @@ class BasePlate:
         return shapes
 
     def draw(self, axs, rotation_angle=0):
-        self._build_shapes(rotation_angle)
+        self.build_shapes(rotation_angle=rotation_angle)
 
         for shape in self.shapes:
             shape.draw(axs)
-
-    def save_dxf(self):
-        self._build_shapes(0)
-        dxf = DXF()
-        for shape in self.shapes:
-            dxf.add_shape(shape)
-        dxf.save(self._DXF_FILE_NAME)

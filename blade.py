@@ -9,6 +9,7 @@ from scipy.optimize import Bounds, least_squares, minimize
 import geometry
 from dxf import DXF
 from geometry import Arc, Circle, Coordinate
+from part import Part
 
 
 @dataclass
@@ -24,7 +25,7 @@ class BladeState:
         )
 
 
-class Blade:
+class Blade(Part):
     _NUM_POINTS = 50
     _COLOUR = "black"
     _BLADE_WIDTH = 10
@@ -65,7 +66,7 @@ class Blade:
         self.blade_width = blade_width
         self.theta_a_range, self.Bx_range = self.calc_Bx_range()
         self.blade_state = None
-        self.shapes = None
+        super().__init__(self._COLOUR, self._DXF_FILE_NAME)
 
     def set_theta_a_domain(self, inner_radius=None, outer_radius=None):
         """Determines the range of theta_a values that are valid for the blade to rotate through
@@ -90,7 +91,10 @@ class Blade:
 
         return (lower_limit, upper_limit)
 
-    def build_shapes(self, blade_state=None):
+    def build_shapes(self, **kwargs):
+        if "blade_state" in kwargs:
+            blade_state = kwargs["blade_state"]
+
         if blade_state is None:
             blade_state = self.blade_state
 
@@ -320,14 +324,6 @@ class Blade:
             4.7,
             bounds=(Bounds(self._DOMAIN_LIMITS[0], self._DOMAIN_LIMITS[1])),
         ).x[0]
-
-    def save_dxf(self):
-        dxf = DXF()
-        for shape in self.shapes:
-            if not shape.construction_line:
-                dxf.add_shape(shape)
-
-        dxf.save(self._DXF_FILE_NAME)
 
     def calc_Bx_range(self):
         """Calculates the range of x values that point B can take
