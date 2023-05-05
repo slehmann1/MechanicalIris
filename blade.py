@@ -160,8 +160,8 @@ class Blade:
         if blade_state is None:
             blade_state = self.blade_state
 
-        for arc in self.shapes:
-            arc.draw(axs)
+        for shape in self.shapes:
+            shape.draw(axs)
 
     def calc_blade_state(self, theta_a):
         AB, theta_b, _ = self.calc_closed_loop_equations(theta_a)

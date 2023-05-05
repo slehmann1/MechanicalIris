@@ -4,6 +4,7 @@ import matplotlib.patches as patch
 import matplotlib.pyplot as plt
 import numpy as np
 
+from base_plate import BasePlate
 from blade import Blade
 
 
@@ -19,11 +20,13 @@ class Iris:
         inner_radius,
         outer_radius,
         blade_width,
+        peg_radius,
     ):
         self.blade_count = blade_count
         self.inner_radius = inner_radius
         self.outer_radius = outer_radius
         self.blade_width = blade_width
+        self.peg_radius = peg_radius
 
         self.pinned_radius = outer_radius + blade_width / 2
         self.BC = self.pinned_radius + blade_width
@@ -50,6 +53,13 @@ class Iris:
             inner_radius + blade_width / 2, outer_radius + blade_width / 2
         )
         self.domain = self.blades[0].theta_a_range
+        self.base_plate = BasePlate(
+            (self.pinned_radius - blade_width),
+            (self.pinned_radius + blade_width),
+            self.pinned_radius,
+            self.peg_radius,
+            self.blade_count,
+        )
 
     def drawIris(self, start_theta_a=None, end_theta_a=None):
         if start_theta_a is None or end_theta_a is None:
@@ -71,13 +81,17 @@ class Iris:
 
         plt.show(block=False)
         i = 0
-
         multiplier = 1
+
         while i < len(blade_states[0]):
+            rotation_angle = blade_states[0][i].C.angle()
+
             plt.cla()
             for blade_index in range(len(self.blades)):
                 self.blades[blade_index].build_shapes(blade_states[blade_index][i])
                 self.blades[blade_index].draw(self.axs, blade_states[blade_index][i])
+
+            self.base_plate.draw(self.axs, rotation_angle)
 
             self.axs.add_patch(
                 patch.Circle((0, 0), self.outer_radius, color=self._COLOUR, fill=False)
@@ -110,7 +124,8 @@ class Iris:
         plt.close()
 
         self.blades[0].save_dxf()
+        self.base_plate.save_dxf()
 
 
-# iris = Iris(4, np.pi, 30, 45, 20)
-# iris.drawIris()
+iris = Iris(4, np.pi, 30, 45, 20, 1)
+iris.drawIris()
