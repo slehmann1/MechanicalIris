@@ -53,6 +53,9 @@ class Iris:
         self.blades[0].set_theta_a_domain(
             inner_radius + blade_width / 2, outer_radius + blade_width / 2
         )
+        tab_width = self.blade_width / 2
+        tab_height = self.blade_width / 2
+
         self.domain = self.blades[0].theta_a_range
         self.base_plate = BasePlate(
             (self.pinned_radius - blade_width),
@@ -60,6 +63,8 @@ class Iris:
             self.pinned_radius,
             self.peg_radius,
             self.blade_count,
+            tab_width,
+            tab_height,
         )
         self.actuator_ring = ActuatorRing(
             self.pinned_radius - blade_width,
@@ -67,8 +72,8 @@ class Iris:
             self.pinned_radius,
             self.peg_radius,
             self.blade_count,
-            self.blade_width / 2,
-            self.blade_width / 2,
+            tab_width,
+            tab_height,
         )
 
     def drawIris(self, start_theta_a=None, end_theta_a=None):
@@ -104,7 +109,7 @@ class Iris:
                 self.blades[blade_index].draw(self.axs, blade_states[blade_index][i])
 
             self.base_plate.draw(self.axs, rotation_angle)
-            self.actuator_ring.draw(self.axs, rotation_angle)
+            self.actuator_ring.draw(self.axs, 0)
 
             self.axs.add_patch(
                 patch.Circle((0, 0), self.outer_radius, color=self._COLOUR, fill=False)
