@@ -22,12 +22,14 @@ class Iris:
         outer_radius,
         blade_width,
         peg_radius,
+        peg_clearance,
     ):
         self.blade_count = blade_count
         self.inner_radius = inner_radius
         self.outer_radius = outer_radius
         self.blade_width = blade_width
         self.peg_radius = peg_radius
+        self.peg_clearance = peg_clearance
         self.pinned_radius = outer_radius + blade_width / 2
         self.BC = self.pinned_radius + blade_width
 
@@ -72,25 +74,26 @@ class Iris:
             ]
             for i in range(self.blade_count)
         ]
-        start_A_rad, end_A_rad = self.calc_A_range(initial_blade_state)
+        min_A_rad, max_A_rad = self.calc_A_range(initial_blade_state)
+        min_C_rad, max_C_rad = self.calc_C_range(initial_blade_state)
 
         self.base_plate = BasePlate(
-            (self.pinned_radius - blade_width),
-            (self.pinned_radius + blade_width),
+            min_C_rad - peg_radius * 2,
+            max_A_rad + peg_radius * 2,
             self.pinned_radius,
-            self.peg_radius,
+            self.peg_clearance + self.peg_radius,
             self.blade_count,
             tab_width,
             tab_height,
         )
 
         self.actuator_ring = ActuatorRing(
-            self.pinned_radius - blade_width,
-            self.pinned_radius + blade_width,
-            self.peg_radius,
+            min_C_rad - peg_radius * 2,
+            max_A_rad + peg_radius * 2,
+            self.peg_radius + self.peg_clearance,
             self.blade_count,
-            start_A_rad,
-            end_A_rad,
+            min_A_rad,
+            max_A_rad,
             tab_width,
             tab_height,
         )
@@ -105,6 +108,17 @@ class Iris:
                 end_A_rad = blade_state.A.magnitude()
 
         return start_A_rad, end_A_rad
+
+    def calc_C_range(self, blade_states):
+        start_C_rad = np.inf
+        end_C_rad = -np.inf
+        for blade_state in blade_states:
+            if blade_state.C.magnitude() < start_C_rad:
+                start_C_rad = blade_state.C.magnitude()
+            if blade_state.C.magnitude() > end_C_rad:
+                end_C_rad = blade_state.C.magnitude()
+
+        return start_C_rad, end_C_rad
 
     def drawIris(self):
         plt.show(block=False)
@@ -162,5 +176,5 @@ class Iris:
         self.actuator_ring.save_dxf()
 
 
-iris = Iris(6, np.pi, 30, 45, 20, 1)
+iris = Iris(6, np.pi, 30, 45, 20, 3, 0.5)
 iris.drawIris()
