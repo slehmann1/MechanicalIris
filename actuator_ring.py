@@ -14,15 +14,17 @@ class ActuatorRing(TabbedRing):
         self,
         inner_radius,
         outer_radius,
-        pin_radius,
         hole_radius,
         pin_count,
+        slot_inner_radius,
+        slot_outer_radius,
         tab_width,
         tab_height,
     ):
-        self.pin_radius = pin_radius
         self.hole_radius = hole_radius
         self.pin_count = pin_count
+        self.slot_inner_radius = slot_inner_radius
+        self.slot_outer_radius = slot_outer_radius
         super().__init__(
             self._COLOUR,
             self._DXF_FILE_NAME,
@@ -40,12 +42,18 @@ class ActuatorRing(TabbedRing):
             [
                 Rectangle(
                     Coordinate(
-                        math.cos(rotation_angle + theta) * self.pin_radius,
-                        math.sin(rotation_angle + theta) * self.pin_radius,
+                        math.cos(rotation_angle + theta)
+                        * (self.slot_inner_radius + self.slot_outer_radius)
+                        / 2,
+                        math.sin(rotation_angle + theta)
+                        * (self.slot_inner_radius + self.slot_outer_radius)
+                        / 2,
                     ),
                     2 * self.hole_radius,
-                    2 * self.hole_radius,
-                    rotation_angle + theta,
+                    self.slot_outer_radius
+                    - self.slot_inner_radius
+                    + 2 * self.hole_radius,
+                    rotation_angle + theta + np.pi / 2,
                     self._COLOUR,
                 )
                 for theta in np.arange(0, 2 * np.pi, 2 * np.pi / self.pin_count)

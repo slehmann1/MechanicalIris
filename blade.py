@@ -30,7 +30,6 @@ class Blade(Part):
     _COLOUR = "black"
     _BLADE_WIDTH = 10
     _DXF_FILE_NAME = "blade.dxf"
-    _HOLE_RADIUS = 1
 
     # Domain limits are rounded from values of 243.434 and 296.565
     _DOMAIN_LIMITS = (244.5 * np.pi / 180, 295.2 * np.pi / 180)
@@ -43,6 +42,7 @@ class Blade(Part):
         pinned_radius,
         blade_radius,
         BC,
+        hole_radius,
         blade_width=None,
     ):
         """An individual blade of an iris
@@ -63,6 +63,7 @@ class Blade(Part):
         self.pinned_radius = pinned_radius
         self.blade_radius = blade_radius
         self.BC = BC
+        self.hole_radius = hole_radius
         self.blade_width = blade_width
         self.theta_a_range, self.Bx_range = self.calc_Bx_range()
         self.blade_state = None
@@ -152,10 +153,10 @@ class Blade(Part):
                 self._COLOUR,
                 False,
             ),
-            Circle(blade_state.A, self._HOLE_RADIUS, self._COLOUR, True, False),
-            Circle(blade_state.B, self._HOLE_RADIUS, self._COLOUR, True, True),
-            Circle(blade_state.C, self._HOLE_RADIUS, self._COLOUR, True, False),
-            Circle(blade_state.D, self._HOLE_RADIUS, self._COLOUR, True, True),
+            Circle(blade_state.A, self.hole_radius, self._COLOUR, True, False),
+            Circle(blade_state.B, self.hole_radius, self._COLOUR, True, True),
+            Circle(blade_state.C, self.hole_radius, self._COLOUR, True, False),
+            Circle(blade_state.D, self.hole_radius, self._COLOUR, True, True),
         ]
 
         return self.shapes
