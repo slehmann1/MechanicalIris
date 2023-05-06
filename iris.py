@@ -4,6 +4,7 @@ import matplotlib.patches as patch
 import matplotlib.pyplot as plt
 import numpy as np
 
+from actuator_ring import ActuatorRing
 from base_plate import BasePlate
 from blade import Blade
 
@@ -60,6 +61,15 @@ class Iris:
             self.peg_radius,
             self.blade_count,
         )
+        self.actuator_ring = ActuatorRing(
+            self.pinned_radius - blade_width,
+            self.pinned_radius + blade_width,
+            self.pinned_radius,
+            self.peg_radius,
+            self.blade_count,
+            self.blade_width / 2,
+            self.blade_width / 2,
+        )
 
     def drawIris(self, start_theta_a=None, end_theta_a=None):
         if start_theta_a is None or end_theta_a is None:
@@ -94,6 +104,7 @@ class Iris:
                 self.blades[blade_index].draw(self.axs, blade_states[blade_index][i])
 
             self.base_plate.draw(self.axs, rotation_angle)
+            self.actuator_ring.draw(self.axs, rotation_angle)
 
             self.axs.add_patch(
                 patch.Circle((0, 0), self.outer_radius, color=self._COLOUR, fill=False)
@@ -127,6 +138,7 @@ class Iris:
 
         self.blades[0].save_dxf()
         self.base_plate.save_dxf()
+        self.actuator_ring.save_dxf()
 
 
 iris = Iris(4, np.pi, 30, 45, 20, 1)

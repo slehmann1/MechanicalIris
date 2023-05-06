@@ -25,6 +25,7 @@ class Coordinate:
         init_angle = self.angle()
         self.x = init_magnitude * math.cos(init_angle + angle)
         self.y = init_magnitude * math.sin(init_angle + angle)
+        return self
 
     def rotated_copy(self, angle):
         init_magnitude = self.magnitude()
@@ -57,6 +58,25 @@ class Coordinate:
             self.y + (other.y - self.y) * progress,
         )
 
+    def midpoint_normal(self, other, normal_dist, positive=True):
+        """Gets the coordinate of a point a normal distance from the midpoint between another coordinate
+
+        Args:
+            other (Coordinate): The other coordinate to determine a normal distance and angle from
+            normal_dist (float): Distance from the midpoint line
+            positive (bool, optional): Controls which side of the midpoint line the coordinate lies. Defaults to True.
+
+        Returns:
+            Coordinate: A point a normal distance away from a midpoint between the two driver coordinates
+        """
+        midpoint = self.linterp(other, 0.5)
+        angle = (self - other).angle()
+        normal_angle = angle + np.pi / 2 if positive else angle + 3 * np.pi / 2
+        return Coordinate(
+            midpoint.x + math.cos(normal_angle) * normal_dist,
+            midpoint.y + math.sin(normal_angle) * normal_dist,
+        )
+
 
 class Shape:
     def __init__(self, colour, contruction_line=False):
@@ -70,6 +90,57 @@ class Shape:
     @abstractmethod
     def draw(self, axs):
         pass
+
+
+class Line(Shape):
+    def __init__(self, start_coord, end_coord, colour, contruction_line=False):
+        self.start_coord = start_coord
+        self.end_coord = end_coord
+        super().__init__(colour, contruction_line)
+
+    def draw(self, axs):
+        axs.plot(
+            [self.start_coord.x, self.end_coord.x],
+            [self.start_coord.y, self.end_coord.y],
+            color=self.colour,
+            linestyle="dashed" if self.construction_line else "solid",
+        )
+
+    def add_to_dxf(self, doc):
+        doc.modelspace.add_line(
+            [self.start_coord.x, self.start_coord.y],
+            [self.end_coord.x, self.end_coord.y],
+        )
+
+
+class Rectangle(Shape):
+    def __init__(
+        self, centre_coord, width, height, theta, colour, contruction_line=False
+    ):
+        coords = self._gen_coords(centre_coord, width, height, theta)
+        self.lines = [
+            Line(coords[0], coords[1], colour),
+            Line(coords[1], coords[2], colour),
+            Line(coords[2], coords[3], colour),
+            Line(coords[3], coords[0], colour),
+        ]
+        super().__init__(colour, contruction_line)
+
+    def _gen_coords(self, centre_coord, width, height, theta):
+        c_1 = Coordinate(-width / 2, -height / 2).rotate(theta) + centre_coord
+        c_2 = Coordinate(-width / 2, height / 2).rotate(theta) + centre_coord
+        c_3 = Coordinate(width / 2, height / 2).rotate(theta) + centre_coord
+        c_4 = Coordinate(width / 2, -height / 2).rotate(theta) + centre_coord
+
+        return [c_1, c_2, c_3, c_4]
+
+    def draw(self, axs):
+        for line in self.lines:
+            line.draw(axs)
+
+    def add_to_dxf(self, doc):
+        for line in self.lines:
+            line.add_to_dxf(doc)
 
 
 class Arc(Shape):
@@ -241,3 +312,16 @@ def get_chord_coord(a, center, theta, radius):
         + radius * math.sin(theta) * math.cos(alpha)
     )
     return Coordinate(x, y)
+
+
+def get_chord_subtended_angle(chord_length, r):
+    """Gets the angle in radians subtended by a chord on a circle
+
+    Args:
+        chord_length (float): Length of the chord
+        r (float): Radius of the circle
+
+    Returns:
+        float: Subtended angle in radians
+    """
+    return 2 * math.asin(chord_length / 2 / r)
