@@ -33,8 +33,6 @@ class Iris:
         self.pinned_radius = aperture_outer_radius + blade_width * 2
         self.BC = self.pinned_radius * 1.07
 
-        # self.pinned_radius = 40
-
         self.fig = plt.figure()
         self.axs = self.fig.gca()
         self.fig.set_size_inches(10, 10)
@@ -173,5 +171,5 @@ class Iris:
         self.actuator_ring.save_dxf()
 
 
-iris = Iris(6, np.pi, 0, 30, 10, 2, 0.5)
-iris.drawIris()
+# iris = Iris(6, np.pi, 0, 30, 10, 2, 0.5)
+# iris.drawIris()

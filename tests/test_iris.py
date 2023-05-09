@@ -28,7 +28,13 @@ class TestIris(unittest.TestCase):
         ]
         for params in irises:
             iris = Iris(
-                4, np.pi, params.innerRadius, params.outerRadius, params.bladeWidth
+                4,
+                np.pi,
+                params.innerRadius,
+                params.outerRadius,
+                params.bladeWidth,
+                2,
+                0.1,
             )
             if self._SHOULD_DRAW:
                 iris.drawIris()
