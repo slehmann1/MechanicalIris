@@ -17,11 +17,10 @@ class BladeState:
     A: Coordinate
     B: Coordinate
     C: Coordinate
-    D: Coordinate
 
     def rotated_copy(self, angle):
         return BladeState(
-            *[coord.rotated_copy(angle) for coord in [self.A, self.B, self.C, self.D]]
+            *[coord.rotated_copy(angle) for coord in [self.A, self.B, self.C]]
         )
 
 
@@ -109,7 +108,7 @@ class Blade(Part):
                 radius * 2,
                 radius * 2,
                 (blade_state.C - center).angle() * 180 / np.pi,
-                (blade_state.D - center).angle() * 180 / np.pi,
+                (blade_state.A - center).angle() * 180 / np.pi,
                 self._COLOUR,
                 True,
             ),
@@ -119,7 +118,7 @@ class Blade(Part):
                 radius * 2 - self.blade_width,
                 radius * 2 - self.blade_width,
                 (blade_state.C - center).angle() * 180 / np.pi,
-                (blade_state.D - center).angle() * 180 / np.pi,
+                (blade_state.A - center).angle() * 180 / np.pi,
                 self._COLOUR,
                 False,
             ),
@@ -129,17 +128,17 @@ class Blade(Part):
                 radius * 2 + self.blade_width,
                 radius * 2 + self.blade_width,
                 (blade_state.C - center).angle() * 180 / np.pi,
-                (blade_state.D - center).angle() * 180 / np.pi,
+                (blade_state.A - center).angle() * 180 / np.pi,
                 self._COLOUR,
                 False,
             ),
             # End slot
             Arc(
-                Coordinate(blade_state.D.x, blade_state.D.y),
+                Coordinate(blade_state.A.x, blade_state.A.y),
                 self.blade_width,
                 self.blade_width,
-                (blade_state.D - center).angle() * 180 / np.pi,
-                (blade_state.D - center).angle() * 180 / np.pi + 180,
+                (blade_state.A - center).angle() * 180 / np.pi,
+                (blade_state.A - center).angle() * 180 / np.pi + 180,
                 self._COLOUR,
                 False,
             ),
@@ -156,7 +155,6 @@ class Blade(Part):
             Circle(blade_state.A, self.hole_radius, self._COLOUR, True, False),
             Circle(blade_state.B, self.hole_radius, self._COLOUR, True, True),
             Circle(blade_state.C, self.hole_radius, self._COLOUR, True, False),
-            Circle(blade_state.D, self.hole_radius, self._COLOUR, True, True),
         ]
 
         return self.shapes
@@ -182,14 +180,11 @@ class Blade(Part):
         )
         center, radius = geometry.get_circle(A, B, C)
 
-        D = geometry.get_chord_coord(C, center, self.blade_angle, radius)
-
         A.rotate(self.rotation_angle)
         B.rotate(self.rotation_angle)
         C.rotate(self.rotation_angle)
-        D.rotate(self.rotation_angle)
 
-        return BladeState(A, B, C, D)
+        return BladeState(A, B, C)
 
     def calc_blade_states(self, start_theta_a, end_theta_a, num_points=_NUM_POINTS):
         """Calculates blade states for a range of theta_a values

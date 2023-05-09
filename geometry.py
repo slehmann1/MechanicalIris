@@ -180,13 +180,23 @@ class Arc(Shape):
 
     def add_to_dxf(self, doc):
         ratio = self.height / self.width
-        doc.modelspace.add_ellipse(
-            (self.center.x, self.center.y),
-            (self.height / 2, 0),
-            ratio,
-            self.theta_1 * np.pi / 180,
-            self.theta_2 * np.pi / 180,
-        )
+        if ratio < 1:
+            doc.modelspace.add_ellipse(
+                (self.center.x, self.center.y),
+                (self.height / 2, 0),
+                ratio,
+                self.theta_1 * np.pi / 180,
+                self.theta_2 * np.pi / 180,
+            )
+        else:
+            ratio = 1 / ratio
+            doc.modelspace.add_ellipse(
+                (self.center.x, self.center.y),
+                (self.width / 2, 0),
+                ratio,
+                self.theta_1 * np.pi / 180,
+                self.theta_2 * np.pi / 180,
+            )
 
 
 class Circle(Shape):

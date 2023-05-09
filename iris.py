@@ -18,26 +18,28 @@ class Iris:
         self,
         blade_count,
         blade_angle,
-        inner_radius,
-        outer_radius,
+        aperture_inner_radius,
+        aperture_outer_radius,
         blade_width,
         peg_radius,
         peg_clearance,
     ):
         self.blade_count = blade_count
-        self.inner_radius = inner_radius
-        self.outer_radius = outer_radius
+        self.aperture_inner_radius = aperture_inner_radius
+        self.aperture_outer_radius = aperture_outer_radius
         self.blade_width = blade_width
         self.peg_radius = peg_radius
         self.peg_clearance = peg_clearance
-        self.pinned_radius = outer_radius + blade_width / 2
-        self.BC = self.pinned_radius + blade_width
+        self.pinned_radius = aperture_outer_radius + blade_width * 2
+        self.BC = self.pinned_radius * 1.07
+
+        # self.pinned_radius = 40
 
         self.fig = plt.figure()
         self.axs = self.fig.gca()
         self.fig.set_size_inches(10, 10)
 
-        blade_radius = self.pinned_radius * 1.2
+        blade_radius = self.pinned_radius * 0.96
         tab_width = self.blade_width / 2
         tab_height = self.blade_width / 2
 
@@ -58,7 +60,8 @@ class Iris:
         ]
 
         self.blades[0].set_theta_a_domain(
-            inner_radius + blade_width / 2, outer_radius + blade_width / 2
+            aperture_inner_radius + blade_width / 2,
+            aperture_outer_radius + blade_width / 2,
         )
 
         self.domain = self.blades[0].theta_a_range
@@ -75,11 +78,12 @@ class Iris:
             for i in range(self.blade_count)
         ]
         min_A_rad, max_A_rad = self.calc_A_range(initial_blade_state)
-        min_C_rad, max_C_rad = self.calc_C_range(initial_blade_state)
+
+        # TODO: Size min/max radii off of minimum size of a range of inputs
 
         self.base_plate = BasePlate(
-            min_C_rad - peg_radius * 2,
-            max_A_rad + peg_radius * 2,
+            min_A_rad - peg_radius * 2,
+            self.pinned_radius + peg_radius * 2,
             self.pinned_radius,
             self.peg_clearance + self.peg_radius,
             self.blade_count,
@@ -88,8 +92,8 @@ class Iris:
         )
 
         self.actuator_ring = ActuatorRing(
-            min_C_rad - peg_radius * 2,
-            max_A_rad + peg_radius * 2,
+            min_A_rad - peg_radius * 2,
+            self.pinned_radius + peg_radius * 2,
             self.peg_radius + self.peg_clearance,
             self.blade_count,
             min_A_rad,
@@ -108,17 +112,6 @@ class Iris:
                 end_A_rad = blade_state.A.magnitude()
 
         return start_A_rad, end_A_rad
-
-    def calc_C_range(self, blade_states):
-        start_C_rad = np.inf
-        end_C_rad = -np.inf
-        for blade_state in blade_states:
-            if blade_state.C.magnitude() < start_C_rad:
-                start_C_rad = blade_state.C.magnitude()
-            if blade_state.C.magnitude() > end_C_rad:
-                end_C_rad = blade_state.C.magnitude()
-
-        return start_C_rad, end_C_rad
 
     def drawIris(self):
         plt.show(block=False)
@@ -142,11 +135,15 @@ class Iris:
             self.actuator_ring.draw(self.axs, act_ring_angle)
 
             self.axs.add_patch(
-                patch.Circle((0, 0), self.outer_radius, color=self._COLOUR, fill=False)
+                patch.Circle(
+                    (0, 0), self.aperture_outer_radius, color=self._COLOUR, fill=False
+                )
             )
 
             self.axs.add_patch(
-                patch.Circle((0, 0), self.inner_radius, color=self._COLOUR, fill=False)
+                patch.Circle(
+                    (0, 0), self.aperture_inner_radius, color=self._COLOUR, fill=False
+                )
             )
 
             self.axs.add_patch(
@@ -155,10 +152,10 @@ class Iris:
 
             self.axs.axis(
                 [
-                    -self.outer_radius * 2.5,
-                    self.outer_radius * 2.5,
-                    -self.outer_radius * 2.5,
-                    self.outer_radius * 2.5,
+                    -self.aperture_outer_radius * 2.5,
+                    self.aperture_outer_radius * 2.5,
+                    -self.aperture_outer_radius * 2.5,
+                    self.aperture_outer_radius * 2.5,
                 ]
             )
             self.fig.canvas.draw()
@@ -176,5 +173,5 @@ class Iris:
         self.actuator_ring.save_dxf()
 
 
-iris = Iris(6, np.pi, 30, 45, 20, 3, 0.5)
+iris = Iris(6, np.pi, 0, 30, 10, 2, 0.5)
 iris.drawIris()
