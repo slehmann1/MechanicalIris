@@ -3,6 +3,7 @@ import math
 from dataclasses import dataclass
 
 import matplotlib.patches as patch
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import Bounds, least_squares, minimize
 
@@ -32,7 +33,7 @@ class Blade(Part):
 
     # Domain limits are rounded from values of 243.434 and 296.565
     _DOMAIN_LIMITS = (244.5 * np.pi / 180, 295.2 * np.pi / 180)
-    _AC_MAX_CORRECTION = 1.03  # Multiplicative factor to account for BY being slightly greater that 2*pinned_radius
+    _AC_MAX_CORRECTION = 1.05  # Multiplicative factor to account for BY being slightly greater that 2*pinned_radius
 
     def __init__(
         self,
@@ -64,6 +65,7 @@ class Blade(Part):
         self.BC = BC
         self.hole_radius = hole_radius
         self.blade_width = blade_width
+        self.AC_max = self.calc_ac_max()
         self.theta_a_range, self.Bx_range = self.calc_Bx_range()
         self.blade_state = None
         super().__init__(self._COLOUR, self._DXF_FILE_NAME)
@@ -210,10 +212,6 @@ class Blade(Part):
         Returns:
             (AB, theta_b, theta_c): Thetas measured in radians
         """
-        AC_max = (
-            math.sqrt(self.pinned_radius**2 + (2 * self.pinned_radius) ** 2)
-            * self._AC_MAX_CORRECTION
-        )
 
         return least_squares(
             functools.partial(self.closed_loop_equations, theta_a=theta_a),
@@ -221,7 +219,7 @@ class Blade(Part):
             bounds=(
                 (self.pinned_radius, np.pi / 2, 0),
                 (
-                    self.get_AB(AC_max, self._DOMAIN_LIMITS[1]),
+                    self.get_AB(self.AC_max, self._DOMAIN_LIMITS[1]),
                     np.pi,
                     np.pi / 2,
                 ),
@@ -292,6 +290,12 @@ class Blade(Part):
 
         return eq_1, eq_2, eq_3
 
+    def calc_ac_max(self):
+        return (
+            math.sqrt(self.pinned_radius**2 + (2 * self.pinned_radius) ** 2)
+            * self._AC_MAX_CORRECTION
+        )
+
     def calc_Bx(self, theta_a):
         """Calculates the x position of point B
         Args:
@@ -300,23 +304,21 @@ class Blade(Part):
             float: X position of point B in an unrotated state
         """
         # TODO: DETERMINE AB UPPER RANGE
-        AC_max = (
-            math.sqrt(self.pinned_radius**2 + (2 * self.pinned_radius) ** 2)
-            * self._AC_MAX_CORRECTION
-        )
         res = least_squares(
             functools.partial(self.closed_loop_equations, theta_a=theta_a),
             (self.BC, np.pi * 3 / 4, np.pi / 4),
             bounds=(
                 (0, np.pi / 2, 0),
-                (self.get_AB(AC_max, self._DOMAIN_LIMITS[1]), np.pi, np.pi / 2),
+                (self.get_AB(self.AC_max, self._DOMAIN_LIMITS[1]), np.pi, np.pi / 2),
             ),
         ).x
         return res[0] * math.cos(res[1])
 
     def calc_theta_a(self, Bx):
-        return minimize(
-            lambda theta_a: abs(abs(self.calc_Bx(theta_a)) - Bx),
+        return least_squares(
+            functools.partial(
+                lambda theta_a, Bx: abs(abs(self.calc_Bx(theta_a)) - Bx), Bx=Bx
+            ),
             4.7,
             bounds=(Bounds(self._DOMAIN_LIMITS[0], self._DOMAIN_LIMITS[1])),
         ).x[0]

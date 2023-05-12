@@ -77,11 +77,12 @@ class Iris:
         ]
         min_A_rad, max_A_rad = self.calc_A_range(initial_blade_state)
 
-        # TODO: Size min/max radii off of minimum size of a range of inputs
+        min_rad = min(min_A_rad - peg_radius * 2, self.aperture_outer_radius)
+        max_rad = max(self.pinned_radius + peg_radius * 2, max_A_rad + peg_radius * 2)
 
         self.base_plate = BasePlate(
-            min_A_rad - peg_radius * 2,
-            self.pinned_radius + peg_radius * 2,
+            min_rad,
+            max_rad,
             self.pinned_radius,
             self.peg_clearance + self.peg_radius,
             self.blade_count,
@@ -90,8 +91,8 @@ class Iris:
         )
 
         self.actuator_ring = ActuatorRing(
-            min_A_rad - peg_radius * 2,
-            self.pinned_radius + peg_radius * 2,
+            min_rad,
+            max_rad,
             self.peg_radius + self.peg_clearance,
             self.blade_count,
             min_A_rad,
@@ -171,5 +172,5 @@ class Iris:
         self.actuator_ring.save_dxf()
 
 
-# iris = Iris(6, np.pi, 0, 30, 10, 2, 0.5)
-# iris.drawIris()
+iris = Iris(6, np.pi, 10, 30, 10, 2, 0.5)
+iris.drawIris()

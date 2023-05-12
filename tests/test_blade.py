@@ -1,3 +1,4 @@
+import math
 import unittest
 
 import numpy as np
@@ -31,14 +32,17 @@ class TestBlade(unittest.TestCase):
     def test_calc_bx(self):
         blade = Blade(0, np.pi, 55, 66, 75, 20, 1)
         self.assertAlmostEqual(
-            blade.calc_Bx(277.73007783 * np.pi / 180), -59.7198989, delta=5
+            blade.calc_Bx(277.73007783 * np.pi / 180), -59.7198989, delta=0.5
         )
 
     def test_calc_theta_a(self):
-        blade = Blade(0, np.pi, 55, 66, 75, 20)
+        blade = Blade(0, np.pi, 55, 66, 75, 2)
+
         self.assertAlmostEqual(
             blade.calc_theta_a(59.7198989) * 180 / np.pi, 277.73007783, delta=5
         )
+        self.assertAlmostEqual(blade.calc_theta_a(45) * 180 / np.pi, 264.65, delta=5)
+        self.assertAlmostEqual(blade.calc_theta_a(20) * 180 / np.pi, 244.56, delta=5)
 
     def test_get_AC(self):
         blade = Blade(0, np.pi, 45, 50.5, 60, 1)
