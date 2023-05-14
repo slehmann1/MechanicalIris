@@ -26,3 +26,7 @@
 .inputs{
   border: 1px solid red
 }
+.iris-visual{
+  border: 1px solid green;
+  height: 100px;
+}
