@@ -65,7 +65,7 @@ class App extends React.Component<
               subtendedAngle={(Math.PI * 2) / 3}
               bladeWidth={this.state.bladeWidth}
               pinDiameter={this.state.pinDiameter}
-              pinnedRadius={10}
+              pinnedRadius={20}
               clearance={this.state.clearance}
               numBlades={this.state.numBlades}
             ></IrisVisual>

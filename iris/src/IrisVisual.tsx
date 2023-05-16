@@ -1,15 +1,29 @@
 import React from "react";
 import { BladeComponent, Blade } from "./Blade.tsx";
 
-class IrisVisual extends React.Component<{
-  bladeRadius: number;
-  subtendedAngle: number;
-  bladeWidth: number;
-  pinDiameter: number;
-  pinnedRadius: number;
-  clearance: number;
-  numBlades: number;
-}> {
+class IrisVisual extends React.Component<
+  {
+    bladeRadius: number;
+    subtendedAngle: number;
+    bladeWidth: number;
+    pinDiameter: number;
+    pinnedRadius: number;
+    clearance: number;
+    numBlades: number;
+  },
+  { offset: { x: number; y: number }; scale: { x: number; y: number } }
+> {
+  ref?: any;
+  MARGIN = 0.15;
+  constructor(props: any) {
+    super(props);
+    this.ref = React.createRef();
+    this.state = {
+      offset: { x: 0, y: 0 },
+      scale: { x: 1, y: 1 },
+    };
+  }
+
   render() {
     const blades: Blade[] = [];
     for (let i = 0; i < this.props.numBlades; i++) {
@@ -25,7 +39,7 @@ class IrisVisual extends React.Component<{
         new Blade(
           this.props.bladeRadius,
           this.props.subtendedAngle,
-          0,
+          ((Math.PI * 2) / this.props.numBlades) * i,
           c,
           this.props.pinDiameter + this.props.clearance,
           this.props.bladeWidth,
@@ -35,15 +49,44 @@ class IrisVisual extends React.Component<{
     }
     return (
       <div className="iris-visual">
-        <svg>
+        <svg ref={this.ref} style={{ height: "100%", width: "100%" }}>
           <g>
             {blades.map((blade, i) => (
-              <BladeComponent blade={blade} key={i}></BladeComponent>
+              <BladeComponent
+                blade={blade}
+                offset={this.state.offset}
+                scale={this.state.scale}
+                key={i}
+              ></BladeComponent>
             ))}
           </g>
         </svg>
       </div>
     );
+  }
+
+  rescale() {
+    if (this.ref.current == null) {
+      console.log("NULL");
+      return;
+    }
+
+    const scale =
+      Math.min(this.ref.current.clientWidth, this.ref.current.clientHeight) /
+      this.props.pinnedRadius /
+      2 /
+      (1 + this.MARGIN);
+
+    this.setState({
+      scale: { x: scale, y: scale },
+      offset: {
+        x: this.ref.current.clientWidth / 2,
+        y: this.ref.current.clientHeight / 2,
+      },
+    });
+  }
+  componentDidMount() {
+    this.rescale();
   }
 }
 export default IrisVisual;
