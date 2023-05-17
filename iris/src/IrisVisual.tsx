@@ -22,7 +22,7 @@ class IrisVisual extends React.Component<
 > {
   ref?: any;
   interval: any;
-  MARGIN = 0.15;
+  MARGIN = 1;
   REFRESH_FREQUENCY = 15;
   startTime: number;
   constructor(props: any) {
@@ -37,15 +37,18 @@ class IrisVisual extends React.Component<
 
   render() {
     const blades: Blade[] = [];
+    const chordLength = this.chordLength(
+      this.props.bladeRadius,
+      this.props.subtendedAngle
+    );
+
     for (let i = 0; i < this.props.numBlades; i++) {
-      const c = {
-        x:
-          this.props.pinnedRadius *
-          Math.cos(((Math.PI * 2) / this.props.numBlades) * i),
-        y:
-          this.props.pinnedRadius *
-          Math.sin(((Math.PI * 2) / this.props.numBlades) * i),
+      const bladeAngle = ((Math.PI * 2) / this.props.numBlades) * i;
+      let c = {
+        x: this.props.pinnedRadius * Math.cos(this.state.rotationAngle / 2),
+        y: this.props.pinnedRadius * Math.sin(this.state.rotationAngle / 2),
       };
+      c = this.rotateCoord(c, bladeAngle);
       blades.push(
         new Blade(
           this.props.bladeRadius,
@@ -70,10 +73,34 @@ class IrisVisual extends React.Component<
                 key={i}
               ></BladeComponent>
             ))}
+            <circle
+              cx={this.state.offset.x}
+              cy={this.state.offset.y}
+              r={this.props.pinnedRadius * this.state.scale.x}
+              fill="None"
+              stroke="black"
+            />
           </g>
         </svg>
       </div>
     );
+  }
+
+  euclideanDistance(a: { x: number; y: number }, b: { x: number; y: number }) {
+    return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
+  }
+
+  rotateCoord(coord: { x: number; y: number }, rotationAngle: number) {
+    const angle = Math.atan2(coord.y, coord.x);
+    const magnitude = this.euclideanDistance(coord, { x: 0, y: 0 });
+    return {
+      x: magnitude * Math.cos(angle + rotationAngle),
+      y: magnitude * Math.sin(angle + rotationAngle),
+    };
+  }
+
+  chordLength(radius: number, subtendedAngle: number) {
+    return 2 * radius * Math.sin(subtendedAngle / 2);
   }
 
   rescale() {

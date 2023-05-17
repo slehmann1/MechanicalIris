@@ -86,7 +86,7 @@ class Blade {
     this.holeDiameter = holeDiameter;
     this.id = id;
 
-    const ac = 2 * radius * Math.sin(subtendedAngle);
+    const ac = 2 * radius * Math.sin(subtendedAngle / 2);
     this.aCoords = {
       x: cCoords.x - Math.cos(thetaA) * ac,
       y: cCoords.y - Math.sin(thetaA) * ac,
@@ -180,6 +180,10 @@ class Blade {
       x: coord.x + radialOffset * Math.cos(angle),
       y: coord.y + radialOffset * Math.sin(angle),
     };
+  }
+
+  euclideanDistance(a: { x: number; y: number }, b: { x: number; y: number }) {
+    return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
   }
 
   getArcCoords(
