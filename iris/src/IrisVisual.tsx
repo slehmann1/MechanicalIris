@@ -10,17 +10,28 @@ class IrisVisual extends React.Component<
     pinnedRadius: number;
     clearance: number;
     numBlades: number;
+    rotationSpeed: number; // rad/s
+    minAngle: number;
+    maxAngle: number;
   },
-  { offset: { x: number; y: number }; scale: { x: number; y: number } }
+  {
+    offset: { x: number; y: number };
+    scale: { x: number; y: number };
+    rotationAngle: number;
+  }
 > {
   ref?: any;
+  interval: any;
   MARGIN = 0.15;
+  REFRESH_FREQUENCY = 15;
+  startTime: number;
   constructor(props: any) {
     super(props);
     this.ref = React.createRef();
     this.state = {
       offset: { x: 0, y: 0 },
       scale: { x: 1, y: 1 },
+      rotationAngle: 0,
     };
   }
 
@@ -39,7 +50,7 @@ class IrisVisual extends React.Component<
         new Blade(
           this.props.bladeRadius,
           this.props.subtendedAngle,
-          ((Math.PI * 2) / this.props.numBlades) * i,
+          ((Math.PI * 2) / this.props.numBlades) * i + this.state.rotationAngle,
           c,
           this.props.pinDiameter + this.props.clearance,
           this.props.bladeWidth,
@@ -87,6 +98,28 @@ class IrisVisual extends React.Component<
   }
   componentDidMount() {
     this.rescale();
+    this.startTime = Date.now() / 1000;
+    this.interval = setInterval(
+      () => this.changeRotationAngle(),
+      this.REFRESH_FREQUENCY
+    );
+  }
+  changeRotationAngle() {
+    let angle =
+      (((Date.now() / 1000 - this.startTime) * this.props.rotationSpeed) %
+        (2 * (this.props.maxAngle - this.props.minAngle))) -
+      (this.props.maxAngle - this.props.minAngle);
+
+    // Allow reversing of direction
+    if (angle < 0) {
+      angle = -angle;
+    }
+    this.setState({
+      rotationAngle: angle,
+    });
+  }
+  componentWillUnmount() {
+    clearInterval(this.interval);
   }
 }
 export default IrisVisual;

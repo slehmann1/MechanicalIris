@@ -61,13 +61,16 @@ class App extends React.Component<
           </Row>
           <Row>
             <IrisVisual
-              bladeRadius={10}
+              bladeRadius={15}
               subtendedAngle={(Math.PI * 2) / 3}
               bladeWidth={this.state.bladeWidth}
               pinDiameter={this.state.pinDiameter}
               pinnedRadius={20}
               clearance={this.state.clearance}
               numBlades={this.state.numBlades}
+              rotationSpeed={Math.PI / 2}
+              minAngle={Math.PI / 2}
+              maxAngle={Math.PI * 0.9}
             ></IrisVisual>
           </Row>
         </Container>
