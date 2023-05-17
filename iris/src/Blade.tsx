@@ -7,12 +7,12 @@ class BladeComponent extends React.Component<{
   render() {
     return (
       <g>
-        {this.render_hole(this.props.blade.c_coords)}
-        {this.render_hole(this.props.blade.a_coords)}
-        {this.props.blade.arc_params.map((arc_coords, i) => (
+        {this.renderHole(this.props.blade.cCoords)}
+        {this.renderHole(this.props.blade.aCoords)}
+        {this.props.blade.arcParams.map((arcCoords, i) => (
           <path
             key={i}
-            d={this.genPath(arc_coords)}
+            d={this.genArcPath(arcCoords)}
             stroke="black"
             fill="none"
           />
@@ -20,7 +20,13 @@ class BladeComponent extends React.Component<{
       </g>
     );
   }
-  genPath(arc_coords: {
+
+  /**
+   *
+   * @param arcCoords Details the arc to be represented
+   * @returns String representing an arc in SVG format
+   */
+  genArcPath(arcCoords: {
     r: number;
     angle: number;
     start: { x: number; y: number };
@@ -28,90 +34,148 @@ class BladeComponent extends React.Component<{
   }) {
     let string =
       "M " +
-      (arc_coords.start.x * this.props.scale.x + this.props.offset.x) +
+      (arcCoords.start.x * this.props.scale.x + this.props.offset.x) +
       " " +
-      (arc_coords.start.y * this.props.scale.y + this.props.offset.y);
+      (arcCoords.start.y * this.props.scale.y + this.props.offset.y);
     string +=
       "A" +
-      arc_coords.r * this.props.scale.x +
+      arcCoords.r * this.props.scale.x +
       " " +
-      arc_coords.r * this.props.scale.x +
+      arcCoords.r * this.props.scale.x +
       " " +
-      (arc_coords.angle * 180) / Math.PI +
+      (arcCoords.angle * 180) / Math.PI +
       " 0 1 " +
-      (arc_coords.end.x * this.props.scale.x + this.props.offset.x) +
+      (arcCoords.end.x * this.props.scale.x + this.props.offset.x) +
       " " +
-      (arc_coords.end.y * this.props.scale.y + this.props.offset.y);
+      (arcCoords.end.y * this.props.scale.y + this.props.offset.y);
     return string;
   }
 
-  render_hole(coords: { x: number; y: number }) {
+  renderHole(coords: { x: number; y: number }) {
     return (
       <circle
         cx={coords.x * this.props.scale.x + this.props.offset.x}
         cy={coords.y * this.props.scale.y + this.props.offset.y}
-        r={this.props.blade.hole_diameter / 2}
+        r={this.props.blade.holeDiameter / 2}
       />
     );
   }
 }
 
 class Blade {
-  a_coords: { x: number; y: number };
-  c_coords: { x: number; y: number };
-  arc_params: {
+  aCoords: { x: number; y: number };
+  cCoords: { x: number; y: number };
+  arcParams: {
     r: number;
     angle: number;
     start: { x: number; y: number };
     end: { x: number; y: number };
   }[];
-  hole_diameter: number;
+  holeDiameter: number;
   id: number;
   constructor(
     radius: number,
-    subtended_angle: number,
-    theta_a: number,
-    c_coords: { x: number; y: number },
-    hole_diameter: number,
-    blade_width: number,
+    subtendedAngle: number,
+    thetaA: number,
+    cCoords: { x: number; y: number },
+    holeDiameter: number,
+    bladeWidth: number,
     id: number
   ) {
-    this.c_coords = c_coords;
-    this.hole_diameter = hole_diameter;
+    this.cCoords = cCoords;
+    this.holeDiameter = holeDiameter;
     this.id = id;
 
-    const ac = 2 * radius * Math.sin(subtended_angle);
-    this.a_coords = {
-      x: c_coords.x - Math.cos(theta_a) * ac,
-      y: c_coords.y - Math.sin(theta_a) * ac,
+    const ac = 2 * radius * Math.sin(subtendedAngle);
+    this.aCoords = {
+      x: cCoords.x - Math.cos(thetaA) * ac,
+      y: cCoords.y - Math.sin(thetaA) * ac,
     };
-    this.arc_params = [
-      // TODO: Instead of offsetting relative to center of iris, blades should be offset radially relative to the centerpoint of the blade
+    const bladeCentre = this.getCentre(this.aCoords, this.cCoords, radius);
+
+    const bladePoints: { x: number; y: number }[] = [
+      this.offsetRadially(this.aCoords, bladeCentre, bladeWidth / 2),
+      this.offsetRadially(this.cCoords, bladeCentre, bladeWidth / 2),
+      this.offsetRadially(this.aCoords, bladeCentre, -bladeWidth / 2),
+      this.offsetRadially(this.cCoords, bladeCentre, -bladeWidth / 2),
+    ];
+
+    this.arcParams = [
+      //Outer Arc
       this.getArcCoords(
-        radius,
-        this.offsetRadially(this.a_coords, blade_width / 2),
-        this.offsetRadially(this.c_coords, blade_width / 2)
+        radius + bladeWidth / 2,
+        bladePoints[0],
+        bladePoints[1]
       ),
+      //Inner Arc
       this.getArcCoords(
-        radius,
-        this.offsetRadially(this.a_coords, -blade_width / 2),
-        this.offsetRadially(this.c_coords, -blade_width / 2)
+        radius - bladeWidth / 2,
+        bladePoints[2],
+        bladePoints[3]
       ),
 
-      this.getArcCoords(
-        blade_width / 2,
-        this.offsetRadially(this.c_coords, blade_width / 2),
-        this.offsetRadially(this.c_coords, -blade_width / 2)
-      ),
-      this.getArcCoords(
-        blade_width / 2,
-        this.offsetRadially(this.a_coords, -blade_width / 2),
-        this.offsetRadially(this.a_coords, blade_width / 2)
-      ),
+      this.getArcCoords(bladeWidth / 2, bladePoints[1], bladePoints[3]),
+      this.getArcCoords(bladeWidth / 2, bladePoints[2], bladePoints[0]),
     ];
   }
-  offsetRadially(coord: { x: number; y: number }, radialOffset: number) {
-    const angle = Math.atan2(coord.y, coord.x);
+
+  /**
+   * Determines the centrepoint of a circle
+   * @param a Coordinate on the circle
+   * @param b Coordinate on the circle
+   * @param radius Circle radius
+   * @returns Coordinate for the centrepoint of the circle
+   */
+  getCentre(
+    a: { x: number; y: number },
+    b: { x: number; y: number },
+    radius: number
+  ) {
+    const chordLength = Math.sqrt(
+      Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2)
+    );
+    let d = 0;
+    if (radius > chordLength / 2) {
+      d = Math.sqrt(Math.pow(radius, 2) - Math.pow(chordLength / 2, 2));
+    } else {
+      d = Math.sqrt(Math.pow(chordLength / 2, 2) - Math.pow(radius, 2));
+    }
+    const midChord = this.linterp(a, b, 0.5);
+    const chordAngle = Math.atan2(b.y - a.y, b.x - a.x);
+    return {
+      x: midChord.x + d * Math.cos(chordAngle + Math.PI / 2),
+      y: midChord.y + d * Math.sin(chordAngle + Math.PI / 2),
+    };
+  }
+
+  /**
+   * Linearly interpolates between two 2D coordinates
+   * @param a Start coordinate
+   * @param b End coordinate
+   * @param progress Progress between 0 and 1
+   * @returns Linearly interpolated coordinate
+   */
+  linterp(
+    a: { x: number; y: number },
+    b: { x: number; y: number },
+    progress: number
+  ) {
+    return { x: a.x + (b.x - a.x) * progress, y: a.y + (b.y - a.y) * progress };
+  }
+
+  /**
+   * Offsets a coordinate in teh radial direction from another coordinate by a given distance
+   * @param coord Coordinate to offset
+   * @param centre Centrepoint to radially offset the coordinate from
+   * @param radialOffset Amount to radially offset the coordinate
+   * @returns Offset coordinate
+   */
+  offsetRadially(
+    coord: { x: number; y: number },
+    centre: { x: number; y: number },
+    radialOffset: number
+  ) {
+    const angle = Math.atan2(coord.y - centre.y, coord.x - centre.x);
     return {
       x: coord.x + radialOffset * Math.cos(angle),
       y: coord.y + radialOffset * Math.sin(angle),
