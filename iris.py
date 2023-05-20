@@ -68,6 +68,8 @@ class Iris:
         initial_blade_state = self.blades[0].calc_blade_states(
             self.domain[0], self.domain[1]
         )
+        print(f"Blade radius: {blade_radius} Pinned radius: {self.pinned_radius}")
+        print(f"Theta a domain: {self.domain}")
         self.blade_states = [
             [
                 initial_blade_state[ii].rotated_copy(2 * np.pi / self.blade_count * i)

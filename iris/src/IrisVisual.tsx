@@ -44,20 +44,31 @@ class IrisVisual extends React.Component<
 
     for (let i = 0; i < this.props.numBlades; i++) {
       const bladeAngle = ((Math.PI * 2) / this.props.numBlades) * i;
+      const theta_a =
+        ((Math.PI * 2) / this.props.numBlades) * i + this.state.rotationAngle;
+      const alpha = Math.acos(
+        this.bound(
+          (chordLength / this.props.pinnedRadius) *
+            Math.cos(this.state.rotationAngle),
+          -1,
+          1
+        )
+      );
       let c = {
-        x: this.props.pinnedRadius * Math.cos(this.state.rotationAngle / 2),
-        y: this.props.pinnedRadius * Math.sin(this.state.rotationAngle / 2),
+        x: 0,
+        y: this.props.pinnedRadius,
       };
       c = this.rotateCoord(c, bladeAngle);
       blades.push(
         new Blade(
           this.props.bladeRadius,
           this.props.subtendedAngle,
-          ((Math.PI * 2) / this.props.numBlades) * i + this.state.rotationAngle,
+          theta_a,
           c,
           this.props.pinDiameter + this.props.clearance,
           this.props.bladeWidth,
-          i
+          i,
+          alpha
         )
       );
     }
@@ -86,6 +97,15 @@ class IrisVisual extends React.Component<
     );
   }
 
+  bound(num: number, min: number, max: number) {
+    if (num < min) {
+      return min;
+    }
+    if (num > max) {
+      return max;
+    }
+    return num;
+  }
   euclideanDistance(a: { x: number; y: number }, b: { x: number; y: number }) {
     return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
   }
@@ -135,7 +155,8 @@ class IrisVisual extends React.Component<
     let angle =
       (((Date.now() / 1000 - this.startTime) * this.props.rotationSpeed) %
         (2 * (this.props.maxAngle - this.props.minAngle))) -
-      (this.props.maxAngle - this.props.minAngle);
+      (this.props.maxAngle - this.props.minAngle) +
+      this.props.minAngle;
 
     // Allow reversing of direction
     if (angle < 0) {

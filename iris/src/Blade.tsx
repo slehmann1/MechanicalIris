@@ -80,17 +80,18 @@ class Blade {
     cCoords: { x: number; y: number },
     holeDiameter: number,
     bladeWidth: number,
-    id: number
+    id: number,
+    centreRotationAngle: number
   ) {
-    this.cCoords = cCoords;
+    const ac = Math.abs(2 * radius * Math.sin(subtendedAngle / 2));
+    this.aCoords = {
+      x: cCoords.x + Math.cos(thetaA) * ac,
+      y: cCoords.y + Math.sin(thetaA) * ac,
+    };
+    this.cCoords = this.rotateAboutCentre(cCoords, centreRotationAngle);
+    this.aCoords = this.rotateAboutCentre(this.aCoords, centreRotationAngle);
     this.holeDiameter = holeDiameter;
     this.id = id;
-
-    const ac = 2 * radius * Math.sin(subtendedAngle / 2);
-    this.aCoords = {
-      x: cCoords.x - Math.cos(thetaA) * ac,
-      y: cCoords.y - Math.sin(thetaA) * ac,
-    };
     const bladeCentre = this.getCentre(this.aCoords, this.cCoords, radius);
 
     const bladePoints: { x: number; y: number }[] = [
@@ -117,6 +118,21 @@ class Blade {
       this.getArcCoords(bladeWidth / 2, bladePoints[1], bladePoints[3]),
       this.getArcCoords(bladeWidth / 2, bladePoints[2], bladePoints[0]),
     ];
+    console.log("A " + this.aCoords.x + " " + this.aCoords.y);
+    console.log("C " + this.cCoords.x + " " + this.cCoords.y);
+    console.log("Theta a " + (thetaA * 180) / Math.PI);
+    console.log("Radius " + radius);
+    console.log("Subtended Angle: " + (subtendedAngle * 180) / Math.PI);
+    console.log("AC " + ac);
+  }
+
+  rotateAboutCentre(coordinate: { x: number; y: number }, angle: number) {
+    const magnitude = this.euclideanDistance(coordinate, { x: 0, y: 0 });
+    const init_angle = Math.atan2(coordinate.y, coordinate.x);
+    return {
+      x: magnitude * Math.cos(init_angle + angle),
+      y: magnitude * Math.sin(init_angle + angle),
+    };
   }
 
   /**
