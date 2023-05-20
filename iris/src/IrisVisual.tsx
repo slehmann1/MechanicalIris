@@ -1,5 +1,6 @@
 import React from "react";
 import { BladeComponent, Blade } from "./Blade.tsx";
+import ActuatorBlade from "./ActuatorBlade.tsx";
 
 class IrisVisual extends React.Component<
   {
@@ -65,7 +66,7 @@ class IrisVisual extends React.Component<
           this.props.subtendedAngle,
           theta_a,
           c,
-          this.props.pinDiameter + this.props.clearance,
+          this.props.pinDiameter,
           this.props.bladeWidth,
           i,
           alpha
@@ -91,6 +92,17 @@ class IrisVisual extends React.Component<
               fill="None"
               stroke="black"
             />
+            <ActuatorBlade
+              innerRadius={10}
+              outerRadius={30}
+              pinCount={this.props.numBlades}
+              slotInnerRadius={34}
+              slotOuterRadius={42}
+              slotWidth={this.props.pinDiameter + this.props.clearance * 2}
+              rotationAngle={this.state.rotationAngle}
+              offset={this.state.offset}
+              scale={this.state.scale}
+            ></ActuatorBlade>
           </g>
         </svg>
       </div>
