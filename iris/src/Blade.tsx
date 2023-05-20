@@ -75,6 +75,7 @@ class Blade {
   }[];
   holeDiameter: number;
   id: number;
+  LOG_VALS = false;
   constructor(
     radius: number,
     subtendedAngle: number,
@@ -123,12 +124,14 @@ class Blade {
       this.getArcCoords(bladeWidth / 2, bladePoints[1], bladePoints[3]),
       this.getArcCoords(bladeWidth / 2, bladePoints[2], bladePoints[0]),
     ];
-    console.log("A " + this.aCoords.x + " " + this.aCoords.y);
-    console.log("C " + this.cCoords.x + " " + this.cCoords.y);
-    console.log("Theta a " + (thetaA * 180) / Math.PI);
-    console.log("Radius " + radius);
-    console.log("Subtended Angle: " + (subtendedAngle * 180) / Math.PI);
-    console.log("AC " + ac);
+    if (this.LOG_VALS) {
+      console.log("A " + this.aCoords.x + " " + this.aCoords.y);
+      console.log("C " + this.cCoords.x + " " + this.cCoords.y);
+      console.log("Theta a " + (thetaA * 180) / Math.PI);
+      console.log("Radius " + radius);
+      console.log("Subtended Angle: " + (subtendedAngle * 180) / Math.PI);
+      console.log("AC " + ac);
+    }
   }
 
   getArcCoords(
