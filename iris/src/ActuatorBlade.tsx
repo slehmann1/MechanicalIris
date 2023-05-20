@@ -8,6 +8,8 @@ class ActuatorBlade extends React.Component<{
   slotOuterRadius: number;
   slotWidth: number;
   rotationAngle: number;
+  tabWidth: number;
+  tabHeight: number;
   offset: { x: number; y: number };
   scale: { x: number; y: number };
 }> {
@@ -48,6 +50,35 @@ class ActuatorBlade extends React.Component<{
       numbers.push(i);
     }
     return numbers;
+  }
+  /**
+   *
+   * @param arcCoords Details the arc to be represented
+   * @returns String representing an arc in SVG format
+   */
+  genArcPath(arcCoords: {
+    r: number;
+    angle: number;
+    start: { x: number; y: number };
+    end: { x: number; y: number };
+  }) {
+    let string =
+      "M " +
+      (arcCoords.start.x * this.props.scale.x + this.props.offset.x) +
+      " " +
+      (arcCoords.start.y * this.props.scale.y + this.props.offset.y);
+    string +=
+      "A" +
+      arcCoords.r * this.props.scale.x +
+      " " +
+      arcCoords.r * this.props.scale.x +
+      " " +
+      (arcCoords.angle * 180) / Math.PI +
+      " 0 1 " +
+      (arcCoords.end.x * this.props.scale.x + this.props.offset.x) +
+      " " +
+      (arcCoords.end.y * this.props.scale.y + this.props.offset.y);
+    return string;
   }
   renderSlot(
     width: number,

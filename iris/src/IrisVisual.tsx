@@ -1,6 +1,7 @@
 import React from "react";
 import { BladeComponent, Blade } from "./Blade.tsx";
 import ActuatorBlade from "./ActuatorBlade.tsx";
+import { Geometry } from "./Geometry.ts";
 
 class IrisVisual extends React.Component<
   {
@@ -38,7 +39,7 @@ class IrisVisual extends React.Component<
 
   render() {
     const blades: Blade[] = [];
-    const chordLength = this.chordLength(
+    const chordLength = Geometry.chordLength(
       this.props.bladeRadius,
       this.props.subtendedAngle
     );
@@ -59,7 +60,7 @@ class IrisVisual extends React.Component<
         x: 0,
         y: this.props.pinnedRadius,
       };
-      c = this.rotateCoord(c, bladeAngle);
+      c = Geometry.rotateAboutOrigin(c, bladeAngle);
       blades.push(
         new Blade(
           this.props.bladeRadius,
@@ -117,22 +118,6 @@ class IrisVisual extends React.Component<
       return max;
     }
     return num;
-  }
-  euclideanDistance(a: { x: number; y: number }, b: { x: number; y: number }) {
-    return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
-  }
-
-  rotateCoord(coord: { x: number; y: number }, rotationAngle: number) {
-    const angle = Math.atan2(coord.y, coord.x);
-    const magnitude = this.euclideanDistance(coord, { x: 0, y: 0 });
-    return {
-      x: magnitude * Math.cos(angle + rotationAngle),
-      y: magnitude * Math.sin(angle + rotationAngle),
-    };
-  }
-
-  chordLength(radius: number, subtendedAngle: number) {
-    return 2 * radius * Math.sin(subtendedAngle / 2);
   }
 
   rescale() {
