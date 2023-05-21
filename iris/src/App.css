@@ -30,3 +30,28 @@
   border: 1px solid green;
   height: 500px;
 }
+.arrow {
+  stroke: rgb(50, 50, 50);
+  stroke-width: 2px;
+}
+.arrow-head {
+  fill: rgb(50, 50, 50);
+}
+.arrow-text {
+  text-anchor:start;
+  font-size: 16px;
+  font-family: "Helvetica Neue", Helvetica, Arial sans-serif;
+  fill: rgb(50, 50, 50);
+  margin-left: 100px;
+  padding-left: 10px;
+}
+.leader-line{
+  stroke: rgba(50, 50, 50,0.3);
+  stroke-width: 1px;
+  stroke-dasharray: 1 0 1;
+}
+.diameter-outline{
+  stroke: rgba(50, 50, 50,0.3);
+  stroke-width: 1px;
+  stroke-dasharray: 1 0 1;
+}

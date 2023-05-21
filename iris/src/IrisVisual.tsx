@@ -4,6 +4,7 @@ import ActuatorRing from "./ActuatorRing.tsx";
 import { Geometry } from "./Geometry.ts";
 import TabbedRing from "./TabbedRing.tsx";
 import BasePlate from "./BasePlate.tsx";
+import DiameterOutline from "./DiameterOutline.tsx";
 
 class IrisVisual extends React.Component<
   {
@@ -96,7 +97,7 @@ class IrisVisual extends React.Component<
               stroke="black"
             />
             <TabbedRing
-              innerRadius={10}
+              innerRadius={35}
               outerRadius={60}
               rotationAngle={-this.state.rotationAngle}
               tabWidth={10}
@@ -119,7 +120,7 @@ class IrisVisual extends React.Component<
             </TabbedRing>
 
             <TabbedRing
-              innerRadius={10}
+              innerRadius={35}
               outerRadius={60}
               rotationAngle={0}
               tabWidth={10}
@@ -139,6 +140,19 @@ class IrisVisual extends React.Component<
                 ></BasePlate>
               }
             </TabbedRing>
+            <DiameterOutline
+              diameter={20}
+              xPosition={80}
+              offset={this.state.offset}
+              scale={this.state.scale}
+            ></DiameterOutline>
+
+            <DiameterOutline
+              diameter={60}
+              xPosition={150}
+              offset={this.state.offset}
+              scale={this.state.scale}
+            ></DiameterOutline>
           </g>
         </svg>
       </div>
