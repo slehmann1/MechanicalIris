@@ -10,8 +10,7 @@ class TabbedRing extends React.Component<{
   offset: { x: number; y: number };
   scale: { x: number; y: number };
   colour: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  children: any;
+  children: React.ReactNode;
 }> {
   render() {
     const tabAngle = Geometry.getChordSubtendedAngle(

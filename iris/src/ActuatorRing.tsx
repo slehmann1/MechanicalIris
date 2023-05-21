@@ -2,15 +2,11 @@ import React from "react";
 import { Geometry } from "./Geometry.ts";
 
 class ActuatorRing extends React.Component<{
-  innerRadius: number;
-  outerRadius: number;
   pinCount: number;
   slotInnerRadius: number;
   slotOuterRadius: number;
   slotWidth: number;
   rotationAngle: number;
-  tabWidth: number;
-  tabHeight: number;
   offset: { x: number; y: number };
   scale: { x: number; y: number };
 }> {

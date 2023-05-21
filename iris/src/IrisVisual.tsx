@@ -3,6 +3,7 @@ import { BladeComponent, Blade } from "./Blade.tsx";
 import ActuatorRing from "./ActuatorRing.tsx";
 import { Geometry } from "./Geometry.ts";
 import TabbedRing from "./TabbedRing.tsx";
+import BasePlate from "./BasePlate.tsx";
 
 class IrisVisual extends React.Component<
   {
@@ -102,22 +103,40 @@ class IrisVisual extends React.Component<
               tabHeight={10}
               offset={this.state.offset}
               scale={this.state.scale}
-              colour={"blue"}
+              colour={"red"}
             >
               {
                 <ActuatorRing
-                  innerRadius={10}
-                  outerRadius={60}
                   pinCount={this.props.numBlades}
                   slotInnerRadius={34}
                   slotOuterRadius={42}
                   slotWidth={this.props.pinDiameter + this.props.clearance * 2}
                   rotationAngle={-this.state.rotationAngle}
-                  tabWidth={10}
-                  tabHeight={10}
                   offset={this.state.offset}
                   scale={this.state.scale}
                 ></ActuatorRing>
+              }
+            </TabbedRing>
+
+            <TabbedRing
+              innerRadius={10}
+              outerRadius={60}
+              rotationAngle={0}
+              tabWidth={10}
+              tabHeight={10}
+              offset={this.state.offset}
+              scale={this.state.scale}
+              colour={"green"}
+            >
+              {
+                <BasePlate
+                  pinCount={this.props.numBlades}
+                  holeDiameter={this.props.pinDiameter}
+                  pinnedRadius={this.props.pinnedRadius}
+                  rotationAngle={0}
+                  offset={this.state.offset}
+                  scale={this.state.scale}
+                ></BasePlate>
               }
             </TabbedRing>
           </g>
