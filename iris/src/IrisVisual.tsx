@@ -2,6 +2,7 @@ import React from "react";
 import { BladeComponent, Blade } from "./Blade.tsx";
 import ActuatorRing from "./ActuatorRing.tsx";
 import { Geometry } from "./Geometry.ts";
+import TabbedRing from "./TabbedRing.tsx";
 
 class IrisVisual extends React.Component<
   {
@@ -93,19 +94,32 @@ class IrisVisual extends React.Component<
               fill="None"
               stroke="black"
             />
-            <ActuatorRing
+            <TabbedRing
               innerRadius={10}
               outerRadius={60}
-              pinCount={this.props.numBlades}
-              slotInnerRadius={34}
-              slotOuterRadius={42}
-              slotWidth={this.props.pinDiameter + this.props.clearance * 2}
               rotationAngle={-this.state.rotationAngle}
               tabWidth={10}
               tabHeight={10}
               offset={this.state.offset}
               scale={this.state.scale}
-            ></ActuatorRing>
+              colour={"blue"}
+            >
+              {
+                <ActuatorRing
+                  innerRadius={10}
+                  outerRadius={60}
+                  pinCount={this.props.numBlades}
+                  slotInnerRadius={34}
+                  slotOuterRadius={42}
+                  slotWidth={this.props.pinDiameter + this.props.clearance * 2}
+                  rotationAngle={-this.state.rotationAngle}
+                  tabWidth={10}
+                  tabHeight={10}
+                  offset={this.state.offset}
+                  scale={this.state.scale}
+                ></ActuatorRing>
+              }
+            </TabbedRing>
           </g>
         </svg>
       </div>
