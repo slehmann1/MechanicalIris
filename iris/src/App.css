@@ -42,8 +42,14 @@
   font-size: 16px;
   font-family: "Helvetica Neue", Helvetica, Arial sans-serif;
   fill: rgb(50, 50, 50);
-  margin-left: 100px;
-  padding-left: 10px;
+  text-anchor: start;
+}
+.angle-text{
+  text-anchor:start;
+  font-size: 16px;
+  font-family: "Helvetica Neue", Helvetica, Arial sans-serif;
+  fill: rgb(50, 50, 50);
+  text-anchor: middle;
 }
 .leader-line{
   stroke: rgba(50, 50, 50,0.3);

@@ -5,6 +5,7 @@ import { Geometry } from "./Geometry.ts";
 import TabbedRing from "./TabbedRing.tsx";
 import BasePlate from "./BasePlate.tsx";
 import DiameterOutline from "./DiameterOutline.tsx";
+import AngularDimension from "./AngularDimension.tsx";
 
 class IrisVisual extends React.Component<
   {
@@ -89,13 +90,7 @@ class IrisVisual extends React.Component<
                 key={i}
               ></BladeComponent>
             ))}
-            <circle
-              cx={this.state.offset.x}
-              cy={this.state.offset.y}
-              r={this.props.pinnedRadius * this.state.scale.x}
-              fill="None"
-              stroke="black"
-            />
+
             <TabbedRing
               innerRadius={35}
               outerRadius={60}
@@ -118,7 +113,6 @@ class IrisVisual extends React.Component<
                 ></ActuatorRing>
               }
             </TabbedRing>
-
             <TabbedRing
               innerRadius={35}
               outerRadius={60}
@@ -140,19 +134,27 @@ class IrisVisual extends React.Component<
                 ></BasePlate>
               }
             </TabbedRing>
+
             <DiameterOutline
               diameter={20}
               xPosition={80}
               offset={this.state.offset}
               scale={this.state.scale}
             ></DiameterOutline>
-
             <DiameterOutline
               diameter={60}
               xPosition={150}
               offset={this.state.offset}
               scale={this.state.scale}
             ></DiameterOutline>
+            <AngularDimension
+              startAngle={this.props.minAngle}
+              endAngle={this.props.maxAngle}
+              radialDiameter={60}
+              dimensionRadialPosition={80}
+              offset={this.state.offset}
+              scale={this.state.scale}
+            ></AngularDimension>
           </g>
         </svg>
       </div>
@@ -205,8 +207,8 @@ class IrisVisual extends React.Component<
       this.props.minAngle;
 
     // Allow reversing of direction
-    if (angle < 0) {
-      angle = -angle;
+    if (angle < this.props.minAngle) {
+      angle = this.props.minAngle - (angle - this.props.minAngle);
     }
     this.setState({
       rotationAngle: angle,

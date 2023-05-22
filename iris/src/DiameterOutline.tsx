@@ -86,7 +86,7 @@ class DiameterOutline extends React.Component<{
       </g>
     );
   }
-  getDimensionText(dimension) {
+  getDimensionText(dimension: number) {
     return (
       "⌀" + (Math.round(dimension * 1000) / 1000).toFixed(3) + " " + this.UNIT
     );
