@@ -17,7 +17,6 @@ class Iris:
     def __init__(
         self,
         blade_count,
-        blade_angle,
         aperture_inner_radius,
         aperture_outer_radius,
         blade_width,
@@ -47,7 +46,6 @@ class Iris:
         self.blades = [
             Blade(
                 2 * np.pi / blade_count * i,
-                blade_angle,
                 self.pinned_radius,
                 blade_radius,
                 self.BC,
@@ -174,5 +172,5 @@ class Iris:
         self.actuator_ring.save_dxf()
 
 
-# iris = Iris(6, np.pi, 10, 30, 10, 2, 0.5)
+# iris = Iris(6, 10, 30, 10, 2, 0.5)
 # iris.drawIris()

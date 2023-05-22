@@ -38,7 +38,6 @@ class Blade(Part):
     def __init__(
         self,
         rotation_angle,
-        blade_angle,
         pinned_radius,
         blade_radius,
         BC,
@@ -49,7 +48,6 @@ class Blade(Part):
 
         Args:
             rotation_angle (float): Rotation angle of the entire blade within the iris
-            blade_angle (float): Angle that is subtended tip to tail of the entire blade
             pinned_radius (float): Radius at which the blade is pinned
             blade_radius (float): Radius of the blade arc
             BC (float): Length from point B to point C
@@ -59,7 +57,6 @@ class Blade(Part):
         if blade_width is None:
             blade_width = self._BLADE_WIDTH
         self.rotation_angle = rotation_angle
-        self.blade_angle = blade_angle
         self.pinned_radius = pinned_radius
         self.blade_radius = blade_radius
         self.BC = BC

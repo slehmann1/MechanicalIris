@@ -19,6 +19,8 @@ class IrisVisual extends React.Component<
     rotationSpeed: number; // rad/s
     minAngle: number;
     maxAngle: number;
+    minApertureDiameter: number;
+    maxApertureDiameter: number;
   },
   {
     offset: { x: number; y: number };
@@ -92,7 +94,7 @@ class IrisVisual extends React.Component<
             ))}
 
             <TabbedRing
-              innerRadius={35}
+              innerRadius={this.props.maxApertureDiameter}
               outerRadius={60}
               rotationAngle={-this.state.rotationAngle}
               tabWidth={10}
@@ -114,7 +116,7 @@ class IrisVisual extends React.Component<
               }
             </TabbedRing>
             <TabbedRing
-              innerRadius={35}
+              innerRadius={this.props.maxApertureDiameter}
               outerRadius={60}
               rotationAngle={0}
               tabWidth={10}
@@ -136,14 +138,14 @@ class IrisVisual extends React.Component<
             </TabbedRing>
 
             <DiameterOutline
-              diameter={20}
-              xPosition={80}
+              diameter={this.props.minApertureDiameter}
+              xPosition={this.props.maxApertureDiameter * 2}
               offset={this.state.offset}
               scale={this.state.scale}
             ></DiameterOutline>
             <DiameterOutline
-              diameter={60}
-              xPosition={150}
+              diameter={this.props.maxApertureDiameter}
+              xPosition={this.props.maxApertureDiameter * 2 + 70}
               offset={this.state.offset}
               scale={this.state.scale}
             ></DiameterOutline>
