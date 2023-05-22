@@ -20,7 +20,8 @@ class BasePlate extends React.Component<{
               this.props.rotationAngle,
             this.props.offset,
             this.props.scale,
-            this.COLOUR
+            this.COLOUR,
+            i
           )
         )}
       </g>
@@ -41,7 +42,8 @@ class BasePlate extends React.Component<{
     angle: number,
     offset: { x: number; y: number },
     scale: { x: number; y: number },
-    colour: string
+    colour: string,
+    key: number
   ) {
     const centreCoords = {
       x: pitchCircleRadius * Math.cos(angle) * scale.x + offset.x,
@@ -55,6 +57,7 @@ class BasePlate extends React.Component<{
         r={circleRadius * scale.x}
         fill="None"
         stroke={colour}
+        key={key}
       />
     );
   }

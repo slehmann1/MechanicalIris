@@ -22,7 +22,8 @@ class ActuatorRing extends React.Component<{
             ((2 * Math.PI) / this.props.pinCount) * i +
               this.props.rotationAngle,
             this.props.offset,
-            this.props.scale
+            this.props.scale,
+            i
           )
         )}
       </g>
@@ -48,7 +49,8 @@ class ActuatorRing extends React.Component<{
     innerRadius: number,
     angle: number,
     offset: { x: number; y: number },
-    scale: { x: number; y: number }
+    scale: { x: number; y: number },
+    key: number
   ) {
     const centreCoords = {
       x: innerRadius,
@@ -80,6 +82,7 @@ class ActuatorRing extends React.Component<{
         stroke={this.COLOUR}
         transform={rotation}
         vectorEffect="non-scaling-stroke"
+        key={key}
       />
     );
   }

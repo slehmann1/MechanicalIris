@@ -2,10 +2,11 @@ import "./App.css";
 import React from "react";
 import Inputs from "./Inputs.tsx";
 import IrisVisual from "./IrisVisual.tsx";
+import Cookies from "js-cookie";
 import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
 import "bootstrap/dist/css/bootstrap.min.css";
-
+import $ from "jquery";
 class App extends React.Component<
   null,
   {
@@ -38,11 +39,12 @@ class App extends React.Component<
     };
     this.state = inputs;
     this.setState = this.setState.bind(this);
+    this.submitForm = this.submitForm.bind(this);
   }
 
   render() {
     return (
-      <div className="App">
+      <form onSubmit={this.submitForm}>
         <Container>
           <Row>
             <Inputs
@@ -73,10 +75,35 @@ class App extends React.Component<
               maxAngle={5.0171595760221885}
             ></IrisVisual>
           </Row>
+          <Row>
+            <button className="btn"> Download DXF </button>
+          </Row>
         </Container>
-      </div>
+      </form>
     );
   }
+  submitForm(e: any) {
+    e.preventDefault();
+    this.calculate();
+  }
+  calculate() {
+    const inputs = { test: "HELLO" };
+    $.ajax({
+      url: "http://127.0.0.1:8000/iris",
+      headers: {
+        "X-CSRFToken": Cookies.get("csrftoken"),
+      },
+      type: "POST",
+      data: JSON.stringify(inputs),
+      contentType: "application/json; charset=utf-8",
+      processData: false,
+      success: function (data) {
+        console.log("Calculation completed successfully");
+        console.log(data);
+      },
+    });
+  }
+
   setState(state) {
     super.setState(state);
     window.localStorage.setItem("Inputs", JSON.stringify(this.state));

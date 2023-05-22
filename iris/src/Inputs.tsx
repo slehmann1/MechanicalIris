@@ -86,6 +86,21 @@ class Inputs extends React.Component<{
             ></InputGroup>
           </Col>
         </Row>
+        <Row>
+          <Col>
+            <InputGroup
+              text="Rotational Speed"
+              value={this.props.pinDiameter}
+              changeCallback={(value: number) => {
+                this.props.callback("pinDiameter", value);
+              }}
+              wide={false}
+            ></InputGroup>
+          </Col>
+          <Col>
+            <button className="btn"> Calculate </button>
+          </Col>
+        </Row>
       </Container>
     );
   }
