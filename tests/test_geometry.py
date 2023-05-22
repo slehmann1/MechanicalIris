@@ -2,8 +2,8 @@ import unittest
 
 import numpy as np
 
-import geometry
-from geometry import Coordinate
+import iris_calculator.geometry as geometry
+from iris_calculator.geometry import Coordinate
 
 
 class TestGeometry(unittest.TestCase):

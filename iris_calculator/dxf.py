@@ -2,7 +2,7 @@ import ezdxf
 import numpy as np
 from ezdxf import units
 
-from geometry import Arc, Coordinate
+from iris_calculator.geometry import Arc, Coordinate
 
 
 class DXF:

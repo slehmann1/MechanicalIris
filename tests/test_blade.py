@@ -3,7 +3,7 @@ import unittest
 
 import numpy as np
 
-from blade import Blade
+from iris_calculator.blade import Blade
 
 
 class TestBlade(unittest.TestCase):

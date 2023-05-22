@@ -2,8 +2,8 @@ import math
 
 import numpy as np
 
-from geometry import Coordinate, Rectangle
-from tabbed_ring import TabbedRing
+from iris_calculator.geometry import Coordinate, Rectangle
+from iris_calculator.tabbed_ring import TabbedRing
 
 
 class ActuatorRing(TabbedRing):

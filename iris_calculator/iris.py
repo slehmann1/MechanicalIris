@@ -4,9 +4,9 @@ import matplotlib.patches as patch
 import matplotlib.pyplot as plt
 import numpy as np
 
-from actuator_ring import ActuatorRing
-from base_plate import BasePlate
-from blade import Blade
+from iris_calculator.actuator_ring import ActuatorRing
+from iris_calculator.base_plate import BasePlate
+from iris_calculator.blade import Blade
 
 
 class Iris:
@@ -174,5 +174,5 @@ class Iris:
         self.actuator_ring.save_dxf()
 
 
-iris = Iris(6, np.pi, 10, 30, 10, 2, 0.5)
-iris.drawIris()
+# iris = Iris(6, np.pi, 10, 30, 10, 2, 0.5)
+# iris.drawIris()

@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import Bounds, least_squares, minimize
 
-import geometry
-from dxf import DXF
-from geometry import Arc, Circle, Coordinate
-from part import Part
+import iris_calculator.geometry as geometry
+from iris_calculator.dxf import DXF
+from iris_calculator.geometry import Arc, Circle, Coordinate
+from iris_calculator.part import Part
 
 
 @dataclass

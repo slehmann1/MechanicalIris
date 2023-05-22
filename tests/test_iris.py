@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from iris import Iris
+from iris_calculator.iris import Iris
 
 
 @dataclass

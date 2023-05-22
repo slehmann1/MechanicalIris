@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from dxf import DXF
+from iris_calculator.dxf import DXF
 
 
 class Part:

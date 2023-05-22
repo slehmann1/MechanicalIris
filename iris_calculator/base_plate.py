@@ -2,8 +2,8 @@ import math
 
 import numpy as np
 
-from geometry import Circle, Coordinate
-from tabbed_ring import TabbedRing
+from iris_calculator.geometry import Circle, Coordinate
+from iris_calculator.tabbed_ring import TabbedRing
 
 
 class BasePlate(TabbedRing):

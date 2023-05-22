@@ -2,9 +2,9 @@ import math
 
 import numpy as np
 
-import geometry
-from geometry import Arc, Circle, Coordinate, Line, Rectangle
-from part import Part
+import iris_calculator.geometry
+from iris_calculator.geometry import Arc, Circle, Coordinate, Line, Rectangle
+from iris_calculator.part import Part
 
 
 class TabbedRing(Part):
