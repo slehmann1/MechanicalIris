@@ -7,7 +7,7 @@ class DiameterOutline extends React.Component<{
   scale: { x: number; y: number };
 }> {
   UNIT = "mm";
-  TEXT_MARGIN_LEFT = 5;
+  TEXT_MARGIN_LEFT = 10;
   TEXT_MARGIN_TOP = 5;
   render(): React.ReactNode {
     return (

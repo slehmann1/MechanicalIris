@@ -10,34 +10,14 @@ from iris_calculator.serializers import GroupSerializer, IrisSerializer, UserSer
 # Create your views here.
 
 
-class UserViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows users to be viewed or edited.
-    """
-
-    queryset = User.objects.all().order_by("-date_joined")
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-
-class GroupViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows groups to be viewed or edited.
-    """
-
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-
 class IrisView(REST_Views.APIView):
     def post(self, request):
         print("Recieved Request:")
         print(request.data)
         iris = Iris(
             int(request.data["bladeCount"]),
-            request.data["minDiameter"],
-            request.data["maxDiameter"],
+            request.data["minDiameter"] / 2,
+            request.data["maxDiameter"] / 2,
             request.data["bladeWidth"],
             request.data["pinRadius"],
             request.data["pinClearance"],

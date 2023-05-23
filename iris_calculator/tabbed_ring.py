@@ -2,7 +2,7 @@ import math
 
 import numpy as np
 
-import iris_calculator.geometry
+import iris_calculator.geometry as geometry
 from iris_calculator.geometry import Arc, Circle, Coordinate, Line, Rectangle
 from iris_calculator.part import Part
 

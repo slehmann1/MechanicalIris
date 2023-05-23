@@ -23,6 +23,8 @@ class IrisVisual extends React.Component<
     maxApertureDiameter: number;
   },
   {
+    height: number;
+    width: number;
     offset: { x: number; y: number };
     scale: { x: number; y: number };
     rotationAngle: number;
@@ -32,23 +34,38 @@ class IrisVisual extends React.Component<
   interval: any;
   MARGIN = 1;
   REFRESH_FREQUENCY = 15;
+  TAB_SIZE = 10;
+  DIMENSION_MARGIN = 0.25;
   startTime: number;
   constructor(props: any) {
     super(props);
     this.ref = React.createRef();
     this.state = {
+      height: 1,
+      width: 1,
       offset: { x: 0, y: 0 },
       scale: { x: 1, y: 1 },
       rotationAngle: 0,
     };
   }
-
   render() {
     const blades: Blade[] = [];
     const chordLength = Geometry.chordLength(
       this.props.bladeRadius,
       this.props.subtendedAngle
     );
+
+    const newScale =
+      this.state.height /
+      (this.props.pinnedRadius +
+        this.props.pinDiameter +
+        this.props.bladeWidth / 2 +
+        this.TAB_SIZE) /
+      (2 + this.MARGIN);
+    // Check if props have changed scale
+    if (this.state.height != 1 && this.state.scale.x != newScale) {
+      this.rescale();
+    }
 
     for (let i = 0; i < this.props.numBlades; i++) {
       const bladeAngle = ((Math.PI * 2) / this.props.numBlades) * i;
@@ -94,11 +111,17 @@ class IrisVisual extends React.Component<
             ))}
 
             <TabbedRing
-              innerRadius={this.props.maxApertureDiameter}
-              outerRadius={60}
+              innerRadius={
+                this.props.maxApertureDiameter / 2 + this.props.clearance * 2
+              }
+              outerRadius={
+                this.props.pinnedRadius +
+                this.props.pinDiameter +
+                this.props.bladeWidth / 2
+              }
               rotationAngle={-this.state.rotationAngle}
-              tabWidth={10}
-              tabHeight={10}
+              tabWidth={this.TAB_SIZE}
+              tabHeight={this.TAB_SIZE}
               offset={this.state.offset}
               scale={this.state.scale}
               colour={"red"}
@@ -116,11 +139,17 @@ class IrisVisual extends React.Component<
               }
             </TabbedRing>
             <TabbedRing
-              innerRadius={this.props.maxApertureDiameter}
-              outerRadius={60}
+              innerRadius={
+                this.props.maxApertureDiameter / 2 + this.props.clearance * 2
+              }
+              outerRadius={
+                this.props.pinnedRadius +
+                this.props.pinDiameter +
+                this.props.bladeWidth / 2
+              }
               rotationAngle={0}
-              tabWidth={10}
-              tabHeight={10}
+              tabWidth={this.TAB_SIZE}
+              tabHeight={this.TAB_SIZE}
               offset={this.state.offset}
               scale={this.state.scale}
               colour={"green"}
@@ -139,21 +168,43 @@ class IrisVisual extends React.Component<
 
             <DiameterOutline
               diameter={this.props.minApertureDiameter}
-              xPosition={this.props.maxApertureDiameter * 2}
+              xPosition={
+                (this.props.pinnedRadius +
+                  this.props.pinDiameter +
+                  this.props.bladeWidth / 2 +
+                  this.TAB_SIZE) *
+                (1 + this.DIMENSION_MARGIN)
+              }
               offset={this.state.offset}
               scale={this.state.scale}
             ></DiameterOutline>
             <DiameterOutline
               diameter={this.props.maxApertureDiameter}
-              xPosition={this.props.maxApertureDiameter * 2 + 70}
+              xPosition={
+                (this.props.pinnedRadius +
+                  this.props.pinDiameter +
+                  this.props.bladeWidth / 2 +
+                  this.TAB_SIZE) *
+                Math.pow(1 + this.DIMENSION_MARGIN, 3)
+              }
               offset={this.state.offset}
               scale={this.state.scale}
             ></DiameterOutline>
             <AngularDimension
               startAngle={this.props.minAngle}
               endAngle={this.props.maxAngle}
-              radialDiameter={60}
-              dimensionRadialPosition={80}
+              radialDiameter={
+                this.props.pinnedRadius +
+                this.props.pinDiameter +
+                this.props.bladeWidth / 2
+              }
+              dimensionRadialPosition={
+                (this.props.pinnedRadius +
+                  this.props.pinDiameter +
+                  this.props.bladeWidth / 2 +
+                  this.TAB_SIZE) *
+                (1 + this.DIMENSION_MARGIN)
+              }
               offset={this.state.offset}
               scale={this.state.scale}
             ></AngularDimension>
@@ -178,18 +229,22 @@ class IrisVisual extends React.Component<
       console.log("NULL");
       return;
     }
-
+    console.log(this.ref.current.clientHeight);
     const scale =
       Math.min(this.ref.current.clientWidth, this.ref.current.clientHeight) /
-      this.props.pinnedRadius /
-      2 /
-      (1 + this.MARGIN);
+      (this.props.pinnedRadius +
+        this.props.pinDiameter +
+        this.props.bladeWidth / 2 +
+        this.TAB_SIZE) /
+      (2 + this.MARGIN);
 
     this.setState({
+      height: this.ref.current.clientHeight,
+      width: this.ref.current.clientWidth,
       scale: { x: scale, y: scale },
       offset: {
         x: this.ref.current.clientWidth / 2,
-        y: this.ref.current.clientHeight / 2,
+        y: this.ref.current.clientHeight / 2 - this.TAB_SIZE,
       },
     });
   }
