@@ -11,6 +11,7 @@ class Inputs extends React.Component<{
   maxDiameter: number;
   pinDiameter: number;
   clearance: number;
+  speed: number;
   callback: (string, number) => void;
 }> {
   constructor(props: any) {
@@ -33,7 +34,7 @@ class Inputs extends React.Component<{
           </Col>
           <Col>
             <InputGroup
-              text="Blade Width"
+              text="Blade Width (mm)"
               value={this.props.bladeWidth}
               changeCallback={(value: number) => {
                 this.props.callback("bladeWidth", value);
@@ -45,7 +46,7 @@ class Inputs extends React.Component<{
         <Row>
           <Col>
             <InputGroup
-              text="Minimum Aperture Diameter"
+              text="Minimum Aperture Diameter (mm)"
               value={this.props.minDiameter}
               changeCallback={(value: number) => {
                 this.props.callback("minDiameter", value);
@@ -55,7 +56,7 @@ class Inputs extends React.Component<{
           </Col>
           <Col>
             <InputGroup
-              text="Maximum Aperture Diameter"
+              text="Maximum Aperture Diameter (mm)"
               value={this.props.maxDiameter}
               changeCallback={(value: number) => {
                 this.props.callback("maxDiameter", value);
@@ -67,7 +68,7 @@ class Inputs extends React.Component<{
         <Row>
           <Col>
             <InputGroup
-              text="Pin Diameter"
+              text="Pin Diameter (mm)"
               value={this.props.pinDiameter}
               changeCallback={(value: number) => {
                 this.props.callback("pinDiameter", value);
@@ -77,7 +78,7 @@ class Inputs extends React.Component<{
           </Col>
           <Col>
             <InputGroup
-              text="Pin Clearance"
+              text="Pin Clearance (mm)"
               value={this.props.clearance}
               changeCallback={(value: number) => {
                 this.props.callback("clearance", value);
@@ -89,10 +90,10 @@ class Inputs extends React.Component<{
         <Row>
           <Col>
             <InputGroup
-              text="Rotational Speed"
-              value={this.props.pinDiameter}
+              text="Rotational Speed (°/s)"
+              value={this.props.speed}
               changeCallback={(value: number) => {
-                this.props.callback("pinDiameter", value);
+                this.props.callback("speed", value);
               }}
               wide={false}
             ></InputGroup>

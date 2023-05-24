@@ -20,6 +20,7 @@ class App extends React.Component<
     pinnedRadius: number;
     minAngle: number;
     maxAngle: number;
+    speed: number;
   }
 > {
   DEFAULT_BLADE_NUM = 10;
@@ -32,6 +33,7 @@ class App extends React.Component<
   DEFAULT_PINNED_RADIUS = 50;
   DEFAULT_MIN_ANGLE = 4.596586633962879;
   DEFAULT_MAX_ANGLE = 5.0171595760221885;
+  DEFAULT_ROTATIONAL_SPEED = 25;
 
   constructor(props) {
     super(props);
@@ -48,6 +50,7 @@ class App extends React.Component<
       pinnedRadius: this.DEFAULT_PINNED_RADIUS,
       minAngle: this.DEFAULT_MIN_ANGLE,
       maxAngle: this.DEFAULT_MAX_ANGLE,
+      speed: this.DEFAULT_ROTATIONAL_SPEED,
     };
     this.state = inputs;
     this.setState = this.setState.bind(this);
@@ -67,6 +70,7 @@ class App extends React.Component<
               maxDiameter={this.state.maxDiameter}
               pinDiameter={this.state.pinDiameter}
               clearance={this.state.clearance}
+              speed={this.state.speed}
               callback={(property, value) => {
                 this.setState({
                   [property]: value,
@@ -83,7 +87,7 @@ class App extends React.Component<
               pinnedRadius={this.state.pinnedRadius}
               clearance={this.state.clearance}
               numBlades={this.state.numBlades}
-              rotationSpeed={0.5}
+              rotationSpeed={(this.state.speed * Math.PI) / 180}
               minAngle={this.state.minAngle}
               maxAngle={this.state.maxAngle}
               minApertureDiameter={this.state.minDiameter}
