@@ -10,7 +10,7 @@ class ActuatorRing extends React.Component<{
   offset: { x: number; y: number };
   scale: { x: number; y: number };
 }> {
-  COLOUR = "blue";
+  static COLOUR = "#9fbfcc";
   render() {
     return (
       <g>
@@ -79,7 +79,7 @@ class ActuatorRing extends React.Component<{
         width={outerRadius - innerRadius}
         height={width}
         fill="None"
-        stroke={this.COLOUR}
+        stroke={ActuatorRing.COLOUR}
         transform={rotation}
         vectorEffect="non-scaling-stroke"
         key={key}

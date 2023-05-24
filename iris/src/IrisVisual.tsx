@@ -30,12 +30,15 @@ class IrisVisual extends React.Component<
     rotationAngle: number;
   }
 > {
-  ref?: any;
-  interval: any;
   MARGIN = 1;
   REFRESH_FREQUENCY = 15;
   TAB_SIZE = 10;
   DIMENSION_MARGIN = 0.25;
+  ACTUATOR_RING_COLOUR = "#282c34";
+  BASE_PLATE_COLOUR = "#282c34";
+
+  ref?: any;
+  interval: any;
   startTime: number;
   constructor(props: any) {
     super(props);
@@ -124,7 +127,7 @@ class IrisVisual extends React.Component<
               tabHeight={this.TAB_SIZE}
               offset={this.state.offset}
               scale={this.state.scale}
-              colour={"red"}
+              colour={ActuatorRing.COLOUR}
             >
               {
                 <ActuatorRing
@@ -140,19 +143,22 @@ class IrisVisual extends React.Component<
             </TabbedRing>
             <TabbedRing
               innerRadius={
-                this.props.maxApertureDiameter / 2 + this.props.clearance * 2
+                (this.props.maxApertureDiameter / 2 +
+                  this.props.clearance * 2) *
+                1.02
               }
               outerRadius={
-                this.props.pinnedRadius +
-                this.props.pinDiameter +
-                this.props.bladeWidth / 2
+                (this.props.pinnedRadius +
+                  this.props.pinDiameter +
+                  this.props.bladeWidth / 2) *
+                1.02
               }
               rotationAngle={0}
               tabWidth={this.TAB_SIZE}
               tabHeight={this.TAB_SIZE}
               offset={this.state.offset}
               scale={this.state.scale}
-              colour={"green"}
+              colour={BasePlate.COLOUR}
             >
               {
                 <BasePlate

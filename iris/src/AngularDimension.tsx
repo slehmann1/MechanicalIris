@@ -8,7 +8,7 @@ class AngularDimension extends React.Component<{
   offset: { x: number; y: number };
   scale: { x: number; y: number };
 }> {
-  TEXT_MARGIN_TOP = 25;
+  TEXT_MARGIN_TOP = 0.08;
   render(): React.ReactNode {
     return (
       <g>
@@ -118,9 +118,9 @@ class AngularDimension extends React.Component<{
             this.props.offset.x
           }
           y={
-            this.props.dimensionRadialPosition * this.props.scale.y +
-            this.props.offset.y +
-            this.TEXT_MARGIN_TOP
+            (this.props.dimensionRadialPosition * this.props.scale.y +
+              this.props.offset.y) *
+            (1 + this.TEXT_MARGIN_TOP)
           }
           className="angle-text"
         >
@@ -141,8 +141,8 @@ class AngularDimension extends React.Component<{
   getDimensionText(startAngle: number, endAngle: number) {
     return (
       (
-        Math.round((((endAngle - startAngle) * 180) / Math.PI) * 1000) / 1000
-      ).toFixed(3) + "°"
+        Math.round((((endAngle - startAngle) * 180) / Math.PI) * 10) / 10
+      ).toFixed(1) + "°"
     );
   }
 }

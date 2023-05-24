@@ -8,7 +8,7 @@ class BasePlate extends React.Component<{
   offset: { x: number; y: number };
   scale: { x: number; y: number };
 }> {
-  COLOUR = "green";
+  static COLOUR = "#4C4C6D";
   render() {
     return (
       <g>
@@ -20,7 +20,7 @@ class BasePlate extends React.Component<{
               this.props.rotationAngle,
             this.props.offset,
             this.props.scale,
-            this.COLOUR,
+            BasePlate.COLOUR,
             i
           )
         )}
