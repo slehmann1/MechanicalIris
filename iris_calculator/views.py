@@ -1,4 +1,5 @@
 from django.contrib.auth.models import Group, User
+from django.http.response import HttpResponse
 from rest_framework import permissions
 from rest_framework import views as REST_Views
 from rest_framework import viewsets
@@ -33,3 +34,21 @@ class IrisView(REST_Views.APIView):
         )
         results = iris.data
         return Response(results)
+
+
+class DXFView(REST_Views.APIView):
+    def get(self, request):
+        print("Recieved DXF Request")
+        iris = Iris(
+            int(request.GET.get("bladeCount")),
+            float(request.GET.get("minDiameter")) / 2,
+            float(request.GET.get("maxDiameter")) / 2,
+            float(request.GET.get("bladeWidth")),
+            float(request.GET.get("pinRadius")),
+            float(request.GET.get("pinClearance")),
+        )
+
+        zip = iris.save_dxfs_as_zip()
+        response = HttpResponse(zip, content_type="application/zip")
+        response["Content-Disposition"] = "attachment; filename=name.zip"
+        return response

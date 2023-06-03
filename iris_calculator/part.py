@@ -4,6 +4,8 @@ from iris_calculator.dxf import DXF
 
 
 class Part:
+    _DXF_FOLDER = ""
+
     def __init__(self, colour, file_name):
         self._colour = colour
         self.file_name = file_name

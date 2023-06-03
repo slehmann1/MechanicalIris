@@ -35,6 +35,8 @@ class App extends React.Component<
   DEFAULT_MAX_ANGLE = 5.0171595760221885;
   DEFAULT_ROTATIONAL_SPEED = 25;
 
+  DXF_ZIP_FILENAME = "IrisDXFs.zip";
+
   constructor(props) {
     super(props);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -56,57 +58,63 @@ class App extends React.Component<
     this.setState = this.setState.bind(this);
     this.submitForm = this.submitForm.bind(this);
     this.calculate = this.calculate.bind(this);
+    this.downloadDXF = this.downloadDXF.bind(this);
+    this.downloadBlob = this.downloadBlob.bind(this);
   }
 
   render() {
     return (
-      <form onSubmit={this.submitForm}>
+      <div>
         <Container>
+          <form onSubmit={this.submitForm}>
+            <Row>
+              <Inputs
+                numBlades={this.state.numBlades}
+                bladeWidth={this.state.bladeWidth}
+                minDiameter={this.state.minDiameter}
+                maxDiameter={this.state.maxDiameter}
+                pinDiameter={this.state.pinDiameter}
+                clearance={this.state.clearance}
+                speed={this.state.speed}
+                callback={(property, value) => {
+                  this.setState({
+                    [property]: value,
+                  });
+                }}
+              ></Inputs>
+            </Row>
+            <Row>
+              <IrisVisual
+                bladeRadius={this.state.bladeRadius}
+                subtendedAngle={(Math.PI * 2) / 3}
+                bladeWidth={this.state.bladeWidth}
+                pinDiameter={this.state.pinDiameter}
+                pinnedRadius={this.state.pinnedRadius}
+                clearance={this.state.clearance}
+                numBlades={this.state.numBlades}
+                rotationSpeed={(this.state.speed * Math.PI) / 180}
+                minAngle={this.state.minAngle}
+                maxAngle={this.state.maxAngle}
+                minApertureDiameter={this.state.minDiameter}
+                maxApertureDiameter={this.state.maxDiameter}
+              ></IrisVisual>
+            </Row>
+          </form>
           <Row>
-            <Inputs
-              numBlades={this.state.numBlades}
-              bladeWidth={this.state.bladeWidth}
-              minDiameter={this.state.minDiameter}
-              maxDiameter={this.state.maxDiameter}
-              pinDiameter={this.state.pinDiameter}
-              clearance={this.state.clearance}
-              speed={this.state.speed}
-              callback={(property, value) => {
-                this.setState({
-                  [property]: value,
-                });
-              }}
-            ></Inputs>
-          </Row>
-          <Row>
-            <IrisVisual
-              bladeRadius={this.state.bladeRadius}
-              subtendedAngle={(Math.PI * 2) / 3}
-              bladeWidth={this.state.bladeWidth}
-              pinDiameter={this.state.pinDiameter}
-              pinnedRadius={this.state.pinnedRadius}
-              clearance={this.state.clearance}
-              numBlades={this.state.numBlades}
-              rotationSpeed={(this.state.speed * Math.PI) / 180}
-              minAngle={this.state.minAngle}
-              maxAngle={this.state.maxAngle}
-              minApertureDiameter={this.state.minDiameter}
-              maxApertureDiameter={this.state.maxDiameter}
-            ></IrisVisual>
-          </Row>
-          <Row>
-            <button className="btn"> Download DXF </button>
+            <button className="btn" onClick={this.downloadDXF}>
+              Download DXF
+            </button>
           </Row>
         </Container>
-      </form>
+      </div>
     );
   }
   submitForm(e: any) {
     e.preventDefault();
     this.calculate();
   }
-  calculate() {
-    const inputs = {
+  getServerInputs() {
+    return {
       bladeCount: this.state.numBlades,
       minDiameter: this.state.minDiameter,
       maxDiameter: this.state.maxDiameter,
@@ -114,6 +122,75 @@ class App extends React.Component<
       pinRadius: this.state.pinDiameter / 2,
       pinClearance: this.state.clearance,
     };
+  }
+  getQueryString(inputs: object) {
+    /**
+     * Creates a URL query string for an object where properties represent each element of the query
+     */
+    let str = "?";
+    for (const input in inputs) {
+      str += input + "=" + inputs[input] + "&";
+    }
+    str = str.substring(0, str.length - 1);
+    return str;
+  }
+  downloadDXF() {
+    const inputs = this.getServerInputs();
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
+    $.ajax({
+      url:
+        "http://127.0.0.1:8000/iris/dxf" +
+        this.getQueryString(this.getServerInputs()),
+      headers: {
+        "X-CSRFToken": Cookies.get("csrftoken"),
+      },
+      type: "GET",
+      dataType: "text",
+      mimeType: "text/plain; charset=x-user-defined",
+      data: JSON.stringify(inputs),
+      contentType: "application/json; charset=utf-8",
+      processData: false,
+      success: function (data) {
+        console.log("DXF zips recieved successfully");
+        let newContent = "";
+        for (let i = 0; i < data.length; i++) {
+          newContent += String.fromCharCode(data.charCodeAt(i) & 0xff);
+        }
+        const bytes = new Uint8Array(newContent.length);
+        for (let i = 0; i < newContent.length; i++) {
+          bytes[i] = newContent.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: "application/zip" });
+        self.downloadBlob(blob, self.DXF_ZIP_FILENAME);
+      },
+    });
+    return;
+  }
+  downloadBlob(blob: Blob, filename: string) {
+    /**
+     * Downloads the given blob as the filename
+     */
+    // Create an object URL for the blob object
+    const url = URL.createObjectURL(blob);
+
+    // Create a new anchor element
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename || "download";
+
+    // Click handler that releases the object URL after the element has been clicked
+    const clickHandler = () => {
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+        removeEventListener("click", clickHandler);
+      }, 150);
+    };
+    a.addEventListener("click", clickHandler, false);
+    a.click();
+  }
+  calculate() {
+    const inputs = this.getServerInputs();
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const app = this;
     $.ajax({

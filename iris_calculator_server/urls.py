@@ -23,4 +23,5 @@ from iris_calculator import views
 urlpatterns = [
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("iris", views.IrisView.as_view()),
+    path("iris/dxf", views.DXFView.as_view()),
 ]

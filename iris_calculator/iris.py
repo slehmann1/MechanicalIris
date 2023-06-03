@@ -1,3 +1,4 @@
+import shutil
 import time
 
 import matplotlib.patches as patch
@@ -12,7 +13,9 @@ from iris_calculator.blade import Blade
 class Iris:
     _SLEEP_TIME = 0.0001
     _COLOUR = "red"
-    _ENDLESS_DRAW = True
+    _ENDLESS_DRAW = False
+    _ZIP_FILENAME = "IrisDXFs"
+    _DXF_FOLDER = "dxf"
 
     def __init__(
         self,
@@ -170,6 +173,25 @@ class Iris:
         self.blades[0].save_dxf()
         self.base_plate.save_dxf()
         self.actuator_ring.save_dxf()
+
+    def save_dxfs_as_zip(self):
+        """Saves DXFs for each part within the iris to a zip file
+
+        Returns:
+            file: Created zip file
+        """
+        # Build shapes for an unrotated state
+        self.blades[0].build_shapes(blade_state=self.blade_states[0][0])
+        self.base_plate.build_shapes(rotation_angle=0)
+        self.actuator_ring.build_shapes(rotation_angle=0)
+
+        self.blades[0].save_dxf()
+        self.base_plate.save_dxf()
+        self.actuator_ring.save_dxf()
+
+        # Transfer dxfs to a folder and create archive
+        shutil.make_archive(self._ZIP_FILENAME, "zip", self._DXF_FOLDER)
+        return open(f"{self._ZIP_FILENAME}.zip", "rb")
 
 
 # iris = Iris(6, 10, 30, 10, 2, 0.5)

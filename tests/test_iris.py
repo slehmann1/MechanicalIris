@@ -29,7 +29,6 @@ class TestIris(unittest.TestCase):
         for params in irises:
             iris = Iris(
                 4,
-                np.pi,
                 params.innerRadius,
                 params.outerRadius,
                 params.bladeWidth,
