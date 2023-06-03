@@ -23,6 +23,7 @@ class IrisView(REST_Views.APIView):
             float(request.GET.get("pinRadius")),
             float(request.GET.get("pinClearance")),
         )
+        a_coords = iris.get_A_coords()
         iris = IrisSerializer(
             {
                 "blade_radius": iris.blades[0].blade_radius,
@@ -30,6 +31,10 @@ class IrisView(REST_Views.APIView):
                 "min_angle": iris.domain[0],
                 "max_angle": iris.domain[1],
                 "bc": iris.BC,
+                "slot_inner_radius": iris.actuator_ring.get_slot_inner_radius(),
+                "slot_outer_radius": iris.actuator_ring.get_slot_outer_radius(),
+                "a_coords": a_coords,
+                "actuator_ring_angle": iris.blade_states[0][0].A.angle(),
             }
         )
         results = iris.data

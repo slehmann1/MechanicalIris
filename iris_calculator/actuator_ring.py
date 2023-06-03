@@ -34,6 +34,12 @@ class ActuatorRing(TabbedRing):
             outer_radius,
         )
 
+    def get_slot_inner_radius(self):
+        return self.slot_inner_radius - self.hole_radius
+
+    def get_slot_outer_radius(self):
+        return self.slot_outer_radius + self.hole_radius
+
     def build_shapes(self, **kwargs):
         self.shapes = super().build_shapes(**kwargs)
         rotation_angle = kwargs["rotation_angle"]

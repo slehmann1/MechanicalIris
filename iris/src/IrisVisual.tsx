@@ -21,6 +21,10 @@ class IrisVisual extends React.Component<
     maxAngle: number;
     minApertureDiameter: number;
     maxApertureDiameter: number;
+    slotInnerRadius: number;
+    slotOuterRadius: number;
+    ACoords: { x: number; y: number }[];
+    actuatorRingAngle: number;
   },
   {
     height: number;
@@ -34,6 +38,7 @@ class IrisVisual extends React.Component<
   REFRESH_FREQUENCY = 15;
   TAB_SIZE = 10;
   DIMENSION_MARGIN = 0.25;
+  INTER_DIMENSION_MARGIN = 0.55;
   ACTUATOR_RING_COLOUR = "#282c34";
   BASE_PLATE_COLOUR = "#282c34";
 
@@ -72,8 +77,6 @@ class IrisVisual extends React.Component<
 
     for (let i = 0; i < this.props.numBlades; i++) {
       const bladeAngle = ((Math.PI * 2) / this.props.numBlades) * i;
-      const theta_a =
-        ((Math.PI * 2) / this.props.numBlades) * i + this.state.rotationAngle;
       const alpha = Math.acos(
         this.bound(
           (chordLength / this.props.pinnedRadius) *
@@ -83,20 +86,20 @@ class IrisVisual extends React.Component<
         )
       );
       let c = {
-        x: 0,
-        y: this.props.pinnedRadius,
+        x: this.props.pinnedRadius,
+        y: 0,
       };
-      c = Geometry.rotateAboutOrigin(c, bladeAngle);
+      c = Geometry.rotateAboutOrigin(c, -this.state.rotationAngle);
       blades.push(
         new Blade(
           this.props.bladeRadius,
           this.props.subtendedAngle,
-          theta_a,
+          this.getACoord(this.state.rotationAngle),
           c,
           this.props.pinDiameter,
           this.props.bladeWidth,
           i,
-          alpha
+          bladeAngle
         )
       );
     }
@@ -132,10 +135,10 @@ class IrisVisual extends React.Component<
               {
                 <ActuatorRing
                   pinCount={this.props.numBlades}
-                  slotInnerRadius={34}
-                  slotOuterRadius={42}
+                  slotInnerRadius={this.props.slotInnerRadius}
+                  slotOuterRadius={this.props.slotOuterRadius}
                   slotWidth={this.props.pinDiameter + this.props.clearance * 2}
-                  rotationAngle={-this.state.rotationAngle}
+                  rotationAngle={this.props.actuatorRingAngle + Math.PI}
                   offset={this.state.offset}
                   scale={this.state.scale}
                 ></ActuatorRing>
@@ -165,7 +168,7 @@ class IrisVisual extends React.Component<
                   pinCount={this.props.numBlades}
                   holeDiameter={this.props.pinDiameter + this.props.clearance}
                   pinnedRadius={this.props.pinnedRadius}
-                  rotationAngle={0}
+                  rotationAngle={-this.state.rotationAngle}
                   offset={this.state.offset}
                   scale={this.state.scale}
                 ></BasePlate>
@@ -191,7 +194,26 @@ class IrisVisual extends React.Component<
                   this.props.pinDiameter +
                   this.props.bladeWidth / 2 +
                   this.TAB_SIZE) *
-                Math.pow(1 + this.DIMENSION_MARGIN, 3)
+                (1 + this.DIMENSION_MARGIN) *
+                (1 + this.INTER_DIMENSION_MARGIN)
+              }
+              offset={this.state.offset}
+              scale={this.state.scale}
+            ></DiameterOutline>
+            <DiameterOutline
+              diameter={
+                (this.props.pinnedRadius +
+                  this.props.pinDiameter +
+                  this.props.bladeWidth / 2) *
+                2
+              }
+              xPosition={
+                (this.props.pinnedRadius +
+                  this.props.pinDiameter +
+                  this.props.bladeWidth / 2 +
+                  this.TAB_SIZE) *
+                (1 + this.DIMENSION_MARGIN) *
+                (1 + this.INTER_DIMENSION_MARGIN * 2)
               }
               offset={this.state.offset}
               scale={this.state.scale}
@@ -235,7 +257,6 @@ class IrisVisual extends React.Component<
       console.log("NULL");
       return;
     }
-    console.log(this.ref.current.clientHeight);
     const scale =
       Math.min(this.ref.current.clientWidth, this.ref.current.clientHeight) /
       (this.props.pinnedRadius +
@@ -261,6 +282,31 @@ class IrisVisual extends React.Component<
       () => this.changeRotationAngle(),
       this.REFRESH_FREQUENCY
     );
+  }
+  getACoord(actuatorRotationAngle: number) {
+    const progress =
+      (actuatorRotationAngle - this.props.minAngle) /
+      (this.props.maxAngle - this.props.minAngle);
+    const startIndex = this.bound(
+      Math.floor((this.props.ACoords.length - 1) * progress),
+      0,
+      this.props.ACoords.length - 2
+    );
+    return {
+      x: this.linterp(
+        this.props.ACoords[startIndex].x,
+        this.props.ACoords[startIndex + 1].x,
+        ((this.props.ACoords.length - 1) * progress) % 1
+      ),
+      y: -this.linterp(
+        this.props.ACoords[startIndex].y,
+        this.props.ACoords[startIndex + 1].y,
+        ((this.props.ACoords.length - 1) * progress) % 1
+      ),
+    };
+  }
+  linterp(a: number, b: number, progress: number) {
+    return (b - a) * progress + a;
   }
   changeRotationAngle() {
     let angle =

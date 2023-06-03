@@ -20,3 +20,7 @@ class IrisSerializer(serializers.Serializer):
     min_angle = serializers.FloatField()
     max_angle = serializers.FloatField()
     bc = serializers.FloatField()
+    slot_inner_radius = serializers.FloatField()
+    slot_outer_radius = serializers.FloatField()
+    a_coords = serializers.ListField()
+    actuator_ring_angle = serializers.FloatField()

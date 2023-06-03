@@ -21,8 +21,13 @@ class App extends React.Component<
     minAngle: number;
     maxAngle: number;
     speed: number;
+    slotInnerRadius: number;
+    slotOuterRadius: number;
+    ACoords: { x: number; y: number }[];
+    actuatorRingAngle: number;
   }
 > {
+  // TODO: CHECK ALL VALUES
   DEFAULT_BLADE_NUM = 10;
   DEFAULT_BLADE_WIDTH = 5;
   DEFAULT_MIN_DIAMETER = 10;
@@ -34,11 +39,14 @@ class App extends React.Component<
   DEFAULT_MIN_ANGLE = 4.596586633962879;
   DEFAULT_MAX_ANGLE = 5.0171595760221885;
   DEFAULT_ROTATIONAL_SPEED = 25;
+  DEFAULT_SLOT_INNER_RADIUS = 34;
+  DEFAULT_SLOT_OUTER_RADIUS = 52;
 
   DXF_ZIP_FILENAME = "IrisDXFs.zip";
 
   constructor(props) {
     super(props);
+    // TODO: Set initial values
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const inputs = JSON.parse(window.localStorage.getItem("Inputs")) || {
@@ -53,6 +61,14 @@ class App extends React.Component<
       minAngle: this.DEFAULT_MIN_ANGLE,
       maxAngle: this.DEFAULT_MAX_ANGLE,
       speed: this.DEFAULT_ROTATIONAL_SPEED,
+      slotInnerRadius: this.DEFAULT_SLOT_INNER_RADIUS,
+      slotOuterRadius: this.DEFAULT_SLOT_OUTER_RADIUS,
+      ACoords: [
+        { x: 1, y: 1 },
+        { x: 2, y: 2 },
+        { x: 3, y: 3 },
+      ],
+      actuatorRingAngle: 0,
     };
     this.state = inputs;
     this.setState = this.setState.bind(this);
@@ -93,10 +109,20 @@ class App extends React.Component<
                 clearance={this.state.clearance}
                 numBlades={this.state.numBlades}
                 rotationSpeed={(this.state.speed * Math.PI) / 180}
-                minAngle={this.state.minAngle}
-                maxAngle={this.state.maxAngle}
+                ACoords={this.state.ACoords}
+                minAngle={
+                  (Math.PI * 3) / 2 -
+                  (this.state.maxAngle - this.state.minAngle) / 2
+                }
+                maxAngle={
+                  (Math.PI * 3) / 2 +
+                  (this.state.maxAngle - this.state.minAngle) / 2
+                }
                 minApertureDiameter={this.state.minDiameter}
                 maxApertureDiameter={this.state.maxDiameter}
+                slotInnerRadius={this.state.slotInnerRadius}
+                slotOuterRadius={this.state.slotOuterRadius}
+                actuatorRingAngle={this.state.actuatorRingAngle}
               ></IrisVisual>
             </Row>
           </form>
@@ -210,6 +236,10 @@ class App extends React.Component<
           pinnedRadius: data["pinned_radius"],
           minAngle: data["min_angle"],
           maxAngle: data["max_angle"],
+          slotInnerRadius: data["slot_inner_radius"],
+          slotOuterRadius: data["slot_outer_radius"],
+          ACoords: data["a_coords"],
+          actuatorRingAngle: data["actuator_ring_angle"],
         });
         app.render();
         console.log(data["maxAngle"]);

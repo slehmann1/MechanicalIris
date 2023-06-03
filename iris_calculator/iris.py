@@ -13,7 +13,7 @@ from iris_calculator.blade import Blade
 class Iris:
     _SLEEP_TIME = 0.0001
     _COLOUR = "red"
-    _ENDLESS_DRAW = False
+    _ENDLESS_DRAW = True
     _ZIP_FILENAME = "IrisDXFs"
     _DXF_FOLDER = "dxf"
 
@@ -115,6 +115,12 @@ class Iris:
 
         return start_A_rad, end_A_rad
 
+    def get_A_coords(self):
+        return [
+            {"x": self.blade_states[0][i].A.x, "y": self.blade_states[0][i].A.y}
+            for i in range(len(self.blade_states[0]))
+        ]
+
     def drawIris(self):
         plt.show(block=False)
         i = 0
@@ -194,5 +200,5 @@ class Iris:
         return open(f"{self._ZIP_FILENAME}.zip", "rb")
 
 
-# iris = Iris(6, 10, 30, 10, 2, 0.5)
+# iris = Iris(1, 10, 30, 10, 2, 0.5)
 # iris.drawIris()

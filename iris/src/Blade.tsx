@@ -79,7 +79,7 @@ class Blade {
   constructor(
     radius: number,
     subtendedAngle: number,
-    thetaA: number,
+    aCoords: { x: number; y: number },
     cCoords: { x: number; y: number },
     holeDiameter: number,
     bladeWidth: number,
@@ -87,10 +87,7 @@ class Blade {
     centreRotationAngle: number
   ) {
     const ac = Math.abs(2 * radius * Math.sin(subtendedAngle / 2));
-    this.aCoords = {
-      x: cCoords.x + Math.cos(thetaA) * ac,
-      y: cCoords.y + Math.sin(thetaA) * ac,
-    };
+    this.aCoords = aCoords;
     this.cCoords = Geometry.rotateAboutOrigin(cCoords, centreRotationAngle);
     this.aCoords = Geometry.rotateAboutOrigin(
       this.aCoords,
@@ -127,7 +124,6 @@ class Blade {
     if (this.LOG_VALS) {
       console.log("A " + this.aCoords.x + " " + this.aCoords.y);
       console.log("C " + this.cCoords.x + " " + this.cCoords.y);
-      console.log("Theta a " + (thetaA * 180) / Math.PI);
       console.log("Radius " + radius);
       console.log("Subtended Angle: " + (subtendedAngle * 180) / Math.PI);
       console.log("AC " + ac);
