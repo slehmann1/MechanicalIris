@@ -190,16 +190,16 @@ class App extends React.Component<
     a.click();
   }
   calculate() {
-    const inputs = this.getServerInputs();
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const app = this;
     $.ajax({
-      url: "http://127.0.0.1:8000/iris",
+      url:
+        "http://127.0.0.1:8000/iris/calc" +
+        this.getQueryString(this.getServerInputs()),
       headers: {
         "X-CSRFToken": Cookies.get("csrftoken"),
       },
-      type: "POST",
-      data: JSON.stringify(inputs),
+      type: "GET",
       contentType: "application/json; charset=utf-8",
       processData: false,
       success: function (data) {

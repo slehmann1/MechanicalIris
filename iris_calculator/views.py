@@ -12,16 +12,16 @@ from iris_calculator.serializers import GroupSerializer, IrisSerializer, UserSer
 
 
 class IrisView(REST_Views.APIView):
-    def post(self, request):
+    def get(self, request):
         print("Recieved Request:")
         print(request.data)
         iris = Iris(
-            int(request.data["bladeCount"]),
-            request.data["minDiameter"] / 2,
-            request.data["maxDiameter"] / 2,
-            request.data["bladeWidth"],
-            request.data["pinRadius"],
-            request.data["pinClearance"],
+            int(request.GET.get("bladeCount")),
+            float(request.GET.get("minDiameter")) / 2,
+            float(request.GET.get("maxDiameter")) / 2,
+            float(request.GET.get("bladeWidth")),
+            float(request.GET.get("pinRadius")),
+            float(request.GET.get("pinClearance")),
         )
         iris = IrisSerializer(
             {
