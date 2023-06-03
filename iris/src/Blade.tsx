@@ -58,7 +58,7 @@ class BladeComponent extends React.Component<{
       <circle
         cx={coords.x * this.props.scale.x + this.props.offset.x}
         cy={coords.y * this.props.scale.y + this.props.offset.y}
-        r={this.props.blade.holeDiameter / 2}
+        r={(this.props.blade.holeDiameter / 2) * this.props.scale.x}
       />
     );
   }

@@ -163,7 +163,7 @@ class IrisVisual extends React.Component<
               {
                 <BasePlate
                   pinCount={this.props.numBlades}
-                  holeDiameter={this.props.pinDiameter}
+                  holeDiameter={this.props.pinDiameter + this.props.clearance}
                   pinnedRadius={this.props.pinnedRadius}
                   rotationAngle={0}
                   offset={this.state.offset}
