@@ -54,7 +54,7 @@ class ActuatorRing extends React.Component<{
   ) {
     const centreCoords = {
       x: innerRadius,
-      y: 0,
+      y: -width / 2,
     };
 
     // Translate, scale, and rotate the actuator blade
