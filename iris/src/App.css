@@ -24,11 +24,10 @@
 }
 
 .inputs{
-  border: 1px solid red
+  padding-top: 1rem;
 }
 .iris-visual{
-  border: 1px solid green;
-  height: 500px;
+  height: 700px;
 }
 .arrow {
   stroke: rgb(50, 50, 50);
