@@ -121,6 +121,9 @@ class Iris:
             for i in range(len(self.blade_states[0]))
         ]
 
+    def get_actuator_rotation_range(self):
+        return self.blade_states[0][0].C.angle(), self.blade_states[0][-1].C.angle()
+
     def drawIris(self):
         plt.show(block=False)
         i = 0
@@ -200,5 +203,5 @@ class Iris:
         return open(f"{self._ZIP_FILENAME}.zip", "rb")
 
 
-# iris = Iris(1, 10, 30, 10, 2, 0.5)
+# iris = Iris(5, 20, 65, 20, 3.5, 1)
 # iris.drawIris()
