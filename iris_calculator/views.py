@@ -28,8 +28,8 @@ class IrisView(REST_Views.APIView):
             {
                 "blade_radius": iris.blades[0].blade_radius,
                 "pinned_radius": iris.blades[0].pinned_radius,
-                "min_angle": iris.domain[0],
-                "max_angle": iris.domain[1],
+                "min_angle": iris.get_actuator_rotation_range()[0],
+                "max_angle": iris.get_actuator_rotation_range()[1],
                 "bc": iris.BC,
                 "slot_inner_radius": iris.actuator_ring.get_slot_inner_radius(),
                 "slot_outer_radius": iris.actuator_ring.get_slot_outer_radius(),

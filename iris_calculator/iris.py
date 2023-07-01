@@ -59,8 +59,8 @@ class Iris:
         ]
 
         self.blades[0].set_theta_a_domain(
-            aperture_inner_radius + blade_width / 2,
-            aperture_outer_radius + blade_width / 2,
+            aperture_inner_radius,
+            aperture_outer_radius,
         )
 
         self.domain = self.blades[0].theta_a_range
@@ -134,6 +134,9 @@ class Iris:
             rotation_angle = self.blade_states[0][i].C.angle()
 
             plt.cla()
+            plt.title(
+                f"Theta A: {self.blade_states[0][i].theta_a * 180 / np.pi} Bx: {self.blades[0].calc_Bx(self.blade_states[0][i].theta_a )}"
+            )
             for blade_index in range(len(self.blades)):
                 self.blades[blade_index].build_shapes(
                     blade_state=self.blade_states[blade_index][i]
@@ -202,6 +205,18 @@ class Iris:
         shutil.make_archive(self._ZIP_FILENAME, "zip", self._DXF_FOLDER)
         return open(f"{self._ZIP_FILENAME}.zip", "rb")
 
+    def plot_bx(self):
+        theta_as = np.arange(200 / 180 * np.pi, 290 / 180 * np.pi, 0.01)
+        bxs = []
+        for theta_a in theta_as:
+            try:
+                bxs.append(self.blades[0].calc_Bx(theta_a))
+            except:
+                bxs.append(0)
+        plt.plot(theta_as * 360 / 2 / np.pi, bxs)
+        plt.show()
 
-# iris = Iris(5, 20, 65, 20, 3.5, 1)
+
+# iris = Iris(5, 30, 65, 20, 3.5, 1)
+# iris.plot_bx()
 # iris.drawIris()

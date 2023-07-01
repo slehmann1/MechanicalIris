@@ -18,10 +18,12 @@ class BladeState:
     A: Coordinate
     B: Coordinate
     C: Coordinate
+    theta_a: float
 
     def rotated_copy(self, angle):
         return BladeState(
-            *[coord.rotated_copy(angle) for coord in [self.A, self.B, self.C]]
+            *[coord.rotated_copy(angle) for coord in [self.A, self.B, self.C]],
+            theta_a=self.theta_a,
         )
 
 
@@ -67,23 +69,22 @@ class Blade(Part):
         self.blade_state = None
         super().__init__(self._COLOUR, self._DXF_FILE_NAME)
 
-    def set_theta_a_domain(self, inner_radius=None, outer_radius=None):
+    def set_theta_a_domain(self, inner_radius, outer_radius):
         """Determines the range of theta_a values that are valid for the blade to rotate through
 
         Returns:
             (float, float): Theta_a domain in radians
         """
+
         lower_limit, upper_limit = self.theta_a_range
 
-        if inner_radius:
-            a_bx_bound = self.calc_theta_a(inner_radius)
-            if a_bx_bound > lower_limit:
-                lower_limit = a_bx_bound
+        a_bx_bound = self.calc_theta_a(inner_radius)
+        if a_bx_bound > lower_limit:
+            lower_limit = a_bx_bound
 
-        if outer_radius:
-            a_bx_bound = self.calc_theta_a(outer_radius)
-            if a_bx_bound < upper_limit:
-                upper_limit = a_bx_bound
+        a_bx_bound = self.calc_theta_a(outer_radius)
+        if a_bx_bound < upper_limit:
+            upper_limit = a_bx_bound
 
         self.theta_a_range = [lower_limit, upper_limit]
         self.Bx_range = [-self.calc_Bx(lower_limit), -self.calc_Bx(upper_limit)]
@@ -183,7 +184,7 @@ class Blade(Part):
         B.rotate(self.rotation_angle)
         C.rotate(self.rotation_angle)
 
-        return BladeState(A, B, C)
+        return BladeState(A, B, C, theta_a)
 
     def calc_blade_states(self, start_theta_a, end_theta_a, num_points=_NUM_POINTS):
         """Calculates blade states for a range of theta_a values
